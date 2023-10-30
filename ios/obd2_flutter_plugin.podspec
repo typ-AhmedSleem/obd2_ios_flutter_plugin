@@ -4,14 +4,14 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'obd2_flutter_plugin'
-  s.version          = '0.0.1'
-  s.summary          = 'A new Flutter plugin project.'
+  s.version          = '1.0.0'
+  s.summary          = 'Flutter plugin for ios for communication between app and OBD2'
   s.description      = <<-DESC
-A new Flutter plugin project.
-                       DESC
+Flutter plugin for ios for communication between app and OBD2.
+                      DESC
   s.homepage         = 'http://example.com'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'typAhmedSleem' => 'typahmedsleem@gmail.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
