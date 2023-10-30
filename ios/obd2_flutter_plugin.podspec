@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 Flutter plugin for ios for communication between app and OBD2.
                       DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'http://github.com/typ-AhmedSleem'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'typAhmedSleem' => 'typahmedsleem@gmail.com' }
   s.source           = { :path => '.' }
