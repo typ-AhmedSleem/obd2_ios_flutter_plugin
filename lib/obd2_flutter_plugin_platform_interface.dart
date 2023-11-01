@@ -23,7 +23,10 @@ abstract class Obd2FlutterPluginPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<String?> getPlatformVersion() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+  /// Calls the native ios code that gets the car fuel level through
+  /// OBD2 bluetooth connection.
+  Future<int?> getFuelLevel() {
+    throw UnimplementedError(
+        "getFuelLevel() should be overridden not called from base interface");
   }
 }
