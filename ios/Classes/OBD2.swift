@@ -52,7 +52,8 @@ class OBD2 : NSObject, ObservableObject {
 
     func initBluetooth() -> Int {
         if self.centralManager == nil {
-            self.centralManager = CBCentralManager(delegate: self, queue: nil)
+            //* [CBCentralManagerOptionShowPowerAlertKey] options means that OS will prompt user to enable BLE if not enabled (USEFUL ^-^)
+            self.centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionShowPowerAlertKey: true])
         }
         if self.centralManager?.state == .unsupported {
             return OBDState.OBD_BLE_UNSUPPORTED
