@@ -10,14 +10,16 @@ import CoreBluetooth
 open class ObdCommand {
     
     // Obd command variables
-    private let buffer : NSMutableArray
-    private let cmd : String
+    internal let buffer : NSMutableArray
+    public let cmd : String
     public var useImperialUnits : Bool
-    private var rawData : String?
+    internal var rawData : String?
     public var responseDelayInMs : Int
-    private var timeStart : Int
-    private var timeEnd : Int
+    internal var timeStart : Int
+    internal var timeEnd : Int
     
+    private let MAX_RESPONSE_DELAY = 250
+
     public init(command: String) {
         self.buffer = NSMutableArray()
         self.cmd = command
@@ -29,15 +31,24 @@ open class ObdCommand {
     }
     
     public func execute(obd: OBD2) {
-        // todo: Call all code below in a sync block
-        // todo: Set the timeStart to current time
-        timeStart = 0
-        // todo: Send the command to peripheral bu calling sendCommand
+        // Time the start of execution
+        self.timeStart = TimeHelper.currentTimeInMillis()
+        // Send the command to peripheral bu calling sendCommand
         self.sendCommand(obd)
-        // todo: Read the result by calling readResult
-        self.readResult(obd)
-        // todo: Set the timeEnd to current time
-        timeEnd = 0
+        // Time the end of execution
+        self.timeEnd = TimeHelper.currentTimeInMillis()
+    }
+
+    public func executeAndWaitResponse() {
+        // Time the start of execution
+        self.timeStart = TimeHelper.currentTimeInMillis()
+        // Send the command to peripheral bu calling sendCommand
+        self.sendCommand(obd)
+        // Read the result by calling readResult
+        let response = self.readResult(obd)
+        // Time the end of execution
+        self.timeEnd = TimeHelper.currentTimeInMillis()
+        return response
     }
     
     private func sendCommand(obd: OBD2) {
@@ -45,6 +56,7 @@ open class ObdCommand {
     }
     
     private func readResult(obd: OBD2)  {
+        // todo: Don't forget to hold thread here if responseDelayInMs is provided with value > 0
         self.readRawBytes(obd)
         self.checkForErrors()
         self.fillBuffer()
