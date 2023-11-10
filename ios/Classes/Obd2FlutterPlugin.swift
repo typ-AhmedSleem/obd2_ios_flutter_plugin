@@ -3,7 +3,7 @@ import UIKit
 
 public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
 
-  @ObservedObject private var bluetoothViewModel = BluetoothViewModel()
+  @ObservedObject private var obd2 = OBD2()
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: Constants.METHOD_CHANNEL_NAME, binaryMessenger: registrar.messenger())
@@ -36,7 +36,7 @@ public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
   }
 
   private func initOBD() -> Bool {
-    
+    // todo: Send the sequence of INIT commands to the OBD adapter
     return false
   }
 
