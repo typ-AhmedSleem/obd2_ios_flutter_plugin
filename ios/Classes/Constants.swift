@@ -43,7 +43,7 @@ struct UUIDs {
  * All OBD protocols.
  *
  */
-struct Protocols {
+struct ObdProtocols {
 
     /**
      * Auto select protocol and save.
