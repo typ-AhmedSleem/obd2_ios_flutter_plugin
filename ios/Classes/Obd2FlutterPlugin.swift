@@ -15,7 +15,6 @@ public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
     switch call.method {
     case Constants.GET_FUEL_LEVEL_METHOD_NAME:
       result(self.getCarFuelLevel())
-
     case Constants.CONNECT_OBD_METHOD_NAME:
         // todo: Check Bluetooth.
         // todo: Connect to OBD2.

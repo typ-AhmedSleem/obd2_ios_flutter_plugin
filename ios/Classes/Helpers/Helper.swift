@@ -40,8 +40,35 @@ class RegexMatcher {
 
 class TimeHelper {
 
-    func currentTimeInMillis() -> Int64 {
+    public static func currentTimeInMillis() -> Int64 {
         return Int64(Date().timeIntervalSince1970 * 1000)
     }
 
+}
+
+class JSONHelper {
+
+    public static func serializeDictionary(dictionary: [String: Any]) -> String? {
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: dictionary, options: [])
+            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                return jsonString
+            }
+        } catch {
+            return nil
+        }
+        return nil
+    }
+
+}
+
+extension [String: String] {   
+
+    /**
+    * Ext function that serializes the calling dictionary into JSON String
+    */
+    public func serializeToJSON() -> String?{
+        return JSONHelper.serializeDictionary(dictionary: self)
+    }
+    
 }

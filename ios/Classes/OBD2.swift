@@ -12,6 +12,7 @@ class OBD2 : NSObject, ObservableObject {
 
     //* Global runtime
     private let logger = Logger("OBD2")
+    private var delegate: OBD2Delegate
     private let executionQueue = DispatchQueue(label: "com.typ.obd.OBD2Queue")
 
     //* Bluetooth related runtime
@@ -46,10 +47,6 @@ class OBD2 : NSObject, ObservableObject {
         return self.getState() == .poweredOn
     }
 
-    func isBluetoothScanning() -> Bool {
-        return self.getState() == .scanning
-    }
-
     func initBluetooth() -> Int {
         if self.centralManager == nil {
             //* [CBCentralManagerOptionShowPowerAlertKey] options means that OS will prompt user to enable BLE if not enabled (USEFUL ^-^)
@@ -61,16 +58,37 @@ class OBD2 : NSObject, ObservableObject {
         if self.centralManager?.state == .poweredOn {
             logger.log("BLE has been initialized.")
         }
-        return OBDState.OBD_BLE_INITIALIZED
+        return OBDStates.OBD_BLE_INITIALIZED
     }
 
-    func scanForDevice() -> [String: CBPeripheral] {
-        if !self.isBluetoothScanning() {
+    private func scanForDevice() -> [String: CBPeripheral] {
+        if !isBluetoothScanning {
             //* Perform scan
             self.isBluetoothScanning = true
             self.centralManager?.scanForPeripherals(withServices: nil, options: nil)
             self.isBluetoothScanning = false
         }
+    }
+
+    /**
+    * Retrieves list of connected-to-system BLE devices and also serializes each device 
+    * into a JSON string to be sent back to FlutterApp through MethodChannel
+    */
+    public func retrieveBoundedBluetoothDevicesSerialized() -> [String] {
+        // todo: Move BLE related stuff to be accessed by BluetoothManager instance instead of CBCentralManager
+        var devices: [String] = []
+        let boundedDevices: [CBPeripheral]  = self.centralManager?.retrieveConnectedPeripherals(withServices: nil)
+        for bleDevice: CBPeripheral in boundedDevices {
+            if bleDevice == nil {
+                continue
+            }
+            let deviceMapped = ["name": bleDevice.name ?? "unnamed device", "address": bleDevice.identifier.uuidString]
+            if let jsonDevice = deviceMapped.serializeToJSON() {
+                devices.append(jsonDevice)
+            }
+        }
+        logger.log("retrieveBoundedBluetoothDevicesSerialized: \(devices)")
+        return devices
     }
 
     func connect() -> Int {
@@ -124,6 +142,7 @@ class OBD2 : NSObject, ObservableObject {
     }
 
     private func sendToClient() {
+        
         self.executionQueue.sync {
             fatalError("Not yet Implemented.")
         }
@@ -142,12 +161,22 @@ class OBD2 : NSObject, ObservableObject {
             return nil
         }
         self.executionQueue.async {
-            
+            self.onCommandExecuted(command: command, hasResponse: false)
             command?.execute(obd: self)
         }
 
     }
 
+}
+
+protocol OBD2Delegate {
+
+    optional func onAdapterConnected()
+    optional func onAdapterInitialized()
+    optional func onAdapterStateChanged(state: ObdState)
+    optional func onAdapterDisconnected()
+    func onCommandExecuted(_ command: ObdCommand, hasResponse: Bool)
+    func onResponseReceived(_ command: ObdCommand, response: String?)
 }
 
 extension OBD2: CBCentralManagerDelegate {
@@ -203,7 +232,6 @@ extension OBD2 : CBPeripheralDelegate {
 
     /* [DELEGATED] Invoked when characteristics discovery has completed */
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor: CBService, error: Error?) {
-
     }
 
 }
