@@ -12,6 +12,7 @@ class OBD2 : NSObject, ObservableObject {
 
     //* Global runtime
     private let logger = Logger("OBD2")
+    private let executionQueue = DispatchQueue(label: "com.typ.obd.OBD2Queue")
 
     //* Bluetooth related runtime
     private var centralManager : CBCentralManager?
@@ -19,7 +20,8 @@ class OBD2 : NSObject, ObservableObject {
     @Published var peripheralNames: [String] = []
 
     //* OBD related runtime
-    // public var bleOn = false
+    private let INITIAL_COMMANDS: [ObdProtocolCommand]
+    public var bleOn = false
     public var bleScanning = false
     public var bleConnected = false
     private var obdState = OBDState.OBD_READY
@@ -27,15 +29,13 @@ class OBD2 : NSObject, ObservableObject {
 
     override init() {
         super.init()
+        self.INITIAL_COMMANDS = [
+            EchoOffCommand(),
+            LineFeedOffCommand(),
+            TimeoutCommand(timeout: 100),
+            SelectProtocolCommand(obdProtocol: ObdProtocols.AUTO),
+        ]
         logger.log("Creating OBD2 instance...")
-    }
-
-    func getStateMapped() -> String{
-        return self.mappedState[self.getRawState()] ?? "NO-STATE"
-    }
-
-    func getRawState() -> Int {
-        return self.centralManager?.state.rawValue ?? -1
     }
 
     func getState() -> CBManagerState {
@@ -112,17 +112,40 @@ class OBD2 : NSObject, ObservableObject {
         }
     }
 
+    /**
+    * Executes sequence of commands to initialize the OBD adapter after successfully connecting to it
+    */
     private func initializeOBD() {
-        // todo: Run the init sequence at first run
-        fatalError("Not yet implemented.")
+        self.executionQueue.sync {
+            for command in self.INITIAL_COMMANDS {
+                await self.executeCommand(command, expectResponse: false)
+            }
+        }
     }
 
     private func sendToClient() {
-        fatalError("Not yet Implemented.")
+        self.executionQueue.sync {
+            fatalError("Not yet Implemented.")
+        }
     }
 
     private func readFromClient() {
-        fatalError("Not yet Implemented.")
+        self.executionQueue.sync {
+            fatalError("Not yet Implemented.")
+        }
+    }
+
+
+    public func executeCommand(_ command: ObdCommand?, expectResponse: Bool) async -> String? {
+        // todo: Call the command execution call in a async block and await for result if expectResponse is true
+        if command == nil {
+            return nil
+        }
+        self.executionQueue.async {
+            
+            command?.execute(obd: self)
+        }
+
     }
 
 }
