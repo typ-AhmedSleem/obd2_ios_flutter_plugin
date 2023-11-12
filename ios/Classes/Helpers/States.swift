@@ -44,3 +44,11 @@ class OBDStates {
     // public static let OBD_ = 1 
     // public static let OBD_ = 1 
 }
+
+enum ObdState {
+    case disconnected = 1
+    case notInitialized = 2
+    case initialized = 3
+    case unsupported = 4
+    case unknown = 5
+}

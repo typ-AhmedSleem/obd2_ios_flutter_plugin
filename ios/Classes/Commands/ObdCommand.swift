@@ -90,7 +90,7 @@ open class ObdCommand {
     }
 
     public func getResult() -> String {
-        return rawData
+        return self.rawData
     }
 
     public func getResultUnit() -> String {
