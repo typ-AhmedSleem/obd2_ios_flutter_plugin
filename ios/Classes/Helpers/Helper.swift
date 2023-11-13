@@ -36,6 +36,29 @@ class RegexMatcher {
         }
     }
 
+    public static func replaceInString(pattern: String, original: String, replacement: String) -> String {
+        do {
+            let regex = try NSRegularExpression(pattern: pattern, options: [])
+            return regex.stringByReplacingMatches(
+                in: original,
+                options: [],
+                range: NSRange(original.startIndex..., in: original),
+                withTemplate: replacement
+            )
+        } catch {
+            return original
+        }
+    }
+
+}
+
+class RegexPatterns {
+
+    public static let WHITESPACE_PATTERN = "\\s"
+    public static let BUSINIT_PATTERN = "(BUS INIT)|(BUSINIT)|(\\.)"
+    public static let SEARCHING_PATTERN = "SEARCHING"
+    public static let DIGITS_LETTERS_PATTERN = "([0-9A-F])+"
+
 }
 
 class TimeHelper {
@@ -60,6 +83,14 @@ class JSONHelper {
         return nil
     }
 
+}
+
+class ASCIIHelper {
+
+    public static func byteToASCII(byte: UInt8) -> Character? {
+        guard let scalar = UnicodeScalar(byte) else { return nil }
+        return Character(scalar)
+    }
 }
 
 extension [String: String] {   
