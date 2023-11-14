@@ -30,58 +30,102 @@ open class ObdCommand {
         self.timeEnd = -1
     }
     
-    public func execute(obd: OBD2) {
-        // Time the start of execution
-        self.timeStart = TimeHelper.currentTimeInMillis()
-        // Send the command to peripheral bu calling sendCommand
-        self.sendCommand(obd)
-        // Time the end of execution
-        self.timeEnd = TimeHelper.currentTimeInMillis()
+    private func executeWithTimeout(bleManager: BluetoothManager, expectResponse: Bool) async -> String? {
+        do {
+            let timeout: TimeInterval = self.responseDelayInMs / 1000
+            let response = try await withTaskCancellationHandler(timeoutDuration: timeout) { ck in
+                return try await self.execute(bleManager, expectResponse)
+            }
+            return response
+        } catch {
+            logger.log("Error while executing command: \(error)")
+            return nil
+        }
     }
 
-    public func executeAndWaitResponse() {
-        // Time the start of execution
-        self.timeStart = TimeHelper.currentTimeInMillis()
-        // Send the command to peripheral bu calling sendCommand
-        self.sendCommand(obd)
-        // Read the result by calling readResult
-        let response = self.readResult(obd)
-        // Time the end of execution
-        self.timeEnd = TimeHelper.currentTimeInMillis()
-        return response
+    public func execute(bleManager: BluetoothManager, expectResponse: Bool) async -> String? {
+        do {    
+            // Time the start of execution
+            self.timeStart = TimeHelper.currentTimeInMillis()
+            // Send the command to peripheral by calling sendCommand
+            try await self.sendCommand(bm: bleManager)
+            // Hold thread for a delay if presented
+            if self.responseDelayInMs > 0 {
+                try await Task.sleep(nanoseconds: self.responseDelayInMs * 1_000_000)
+            }
+            var response: String? = nil
+            if expectResponse {
+                // Read the result by calling readResult
+                response = try await self.readResult(bm: bleManager)
+            }
+            // Time the end of execution
+            self.timeEnd = TimeHelper.currentTimeInMillis()
+            // log
+            logger.log("Executed: cmd='\(self.cmd)', res='\(self.response)' took= \(self.timeEnd - self.timeStart) ms")
+            return response
+        } catch {
+            logger.log("Error while executing command: \(error)")
+            return nil
+        }
+    }
+
+    /**
+     * Sends the OBD-II request.
+     */
+    private func sendCommand(bm: BluetoothManager) async throws {
+        try await bm.send(cmd: self.cmd)
     }
     
-    private func sendCommand(obd: OBD2) {
-        fatalError("Not yet implemented")
+    /**
+     * Reads the OBD-II response.
+     */
+    private func readResult(bluetoothManager: bluetoothManager) async throws {
+        await self.readRawBytes(bm: bluetoothManager)
+        try await self.checkForErrors()
+        await self.fillBuffer()
+        await performCalculations()
     }
     
-    private func readResult(obd: OBD2)  {
-        // todo: Don't forget to hold thread here if responseDelayInMs is provided with value > 0
-        self.readRawBytes(obd)
-        self.checkForErrors()
-        self.fillBuffer()
-        performCalculations()
+    private func readRawBytes(bm bleManager: BluetoothManager) async {
+        // todo: Check latest ResponseHolder instance in BLEManager
+        // todo: Consume that response if not yet consumed
     }
     
-    private func readRawBytes(obd: OBD2) {
-        fatalError("Not yet implemented")
+    private func checkForErrors() async throws {
+        if self.rawData == nil {
+            return
+        }
+        let errors = [
+            NoDataError(),
+            BusInitError(),
+            MisunderstoodCommandError(),
+            InvalidResponseError(),
+            StoppedError(),
+            UnableToConnectError(),
+            UnknownError(),
+            UnSupportedCommandError()
+        ]
+        //* Iterate over errors and check response against every single possible error
+        for error in errors {
+            error.setCommand(self)
+            if error.check(self.rawData) {
+                throw error
+            }
+        }
     }
     
-    private func checkForErrors() {
+    /**
+     * Resolves the rawData of response and fill buffer with valid response bytes
+     */
+    private func fillBuffer() async {
         fatalError("Not yet implemented")
     }
     
     /**
+     * This method exists so that for each command, there must be a method that is
+     * called only once to perform calculations.
      */
-    private func resolveResult() {
-        fatalError("Not yet implemented")
-    }
-    
-    private func fillBuffer() {
-        fatalError("Not yet implemented")
-    }
-    
-    func performCalculations() {
+    func performCalculations() async {
         fatalError("This method should be overridden.")
     }
     
