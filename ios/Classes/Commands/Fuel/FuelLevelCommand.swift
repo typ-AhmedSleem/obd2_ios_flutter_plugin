@@ -10,6 +10,11 @@ class FuelLevelCommand : PercentageObdCommand {
         super.init(command: "01 2F")
     }
 
+    public convenience init(delay: Int) {
+        self.init()
+        self.responseDelayInMs = delay
+    }
+
     public override func performCalculations() {
         // ignore first two bytes [hh hh] of the response
         self.percentage = (buffer[2] * 100.0) / 255.0;

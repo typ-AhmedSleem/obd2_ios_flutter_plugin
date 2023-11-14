@@ -8,3 +8,7 @@
 class AbstractCallError : Error { }
 
 class NotImplementedError : Error { }
+
+class CommandExecutionError : Error { }
+
+class CantConnectError : Error { }

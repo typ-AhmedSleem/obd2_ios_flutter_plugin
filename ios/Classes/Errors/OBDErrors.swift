@@ -25,7 +25,7 @@ class ResponseError : Error {
         return content == nil ? "" : content.replacingOccurrences(of: "\\s", with: "").uppercased()
     }
 
-    public func isError(response: String) -> Bool{
+    public func check(response: String) -> Bool {
         self.response = response
         if self.matchRegex {
             return RegexMatcher.isMatchingRegex(inputString: clean(self.response), regexPattern: clean(self.message))

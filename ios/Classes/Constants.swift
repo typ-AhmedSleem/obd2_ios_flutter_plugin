@@ -1,11 +1,18 @@
 import CoreBluetooth
 
-struct Constants {
-    public static let  METHOD_CHANNEL_NAME = "OBD2"
-    public static let  INIT_OBD2_METHOD_NAME = "initOBD2"
-    public static let  CONNECT_OBD_METHOD_NAME = "connectOBD2"
-    public static let  GET_FUEL_LEVEL_METHOD_NAME = "carFuelLevel"
+struct MethodChannelsNames {
+    public static let BLUE_DEVICES = "BLUE_DEVICES"
+    public static let FUEL = "FUEL"
+}
 
+struct MethodsNames {
+    public static let  SCAN_BLUETOOTH_DEVICES = "scan"
+    public static let  CONNECT_ADAPTER = "CONNECT"
+    public static let  INIT_ADAPTER = "INIT"
+    public static let  GET_FUEL_LEVEL = "GET_LEVEL"
+}
+
+struct Constants {
     public static let  INITIAL_RESULT = -1
 
     public static let  RESULT_CODE_INIT_DONE = -2
@@ -22,11 +29,12 @@ struct Constants {
     public static let  CMD_OBD2_IDENTIFIER = "AT @2"
     public static let  CMD_AUTO_FORMATTING_ON = "AT CAF1"
     public static let  CMD_RESPONSES_ON = "AT R1"
-    public static let  CMD_GET_FUEL_LEVEL = ""
 
     public static let  RESPONSE_OK = "OK"
     public static let  RESPONSE_NO_DATA = ""
     public static let  RESPONSE_ERROR = "?"
+
+    public static let NO_RESPONSE = "[NO_RESPONSE]"
 }
 
 struct OBDConstants {
