@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'obd2_flutter_plugin_method_channel.dart';
@@ -23,9 +25,24 @@ abstract class Obd2FlutterPluginPlatform extends PlatformInterface {
     _instance = instance;
   }
 
+  Future<List<String>?> getBLEDevices() {
+    throw UnimplementedError(
+        "getBLEDevices() should be overridden not called from base interface");
+  }
+
+  Future<bool?> connect(String address) {
+    throw UnimplementedError(
+        "connect() should be overridden not called from base interface");
+  }
+
+  Future<void> init() {
+    throw UnimplementedError(
+        "init() should be overridden not called from base interface");
+  }
+
   /// Calls the native ios code that gets the car fuel level through
   /// OBD2 bluetooth connection.
-  Future<int?> getFuelLevel() {
+  Future<String?> getFuelLevel() {
     throw UnimplementedError(
         "getFuelLevel() should be overridden not called from base interface");
   }
