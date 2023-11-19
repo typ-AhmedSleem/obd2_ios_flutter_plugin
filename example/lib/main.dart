@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:obd2_flutter_plugin/obd2_flutter_plugin.dart';
+import 'logger.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,8 +17,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  int _fuelLevel = -1;
+  String _fuelLevel = "--";
   final _obd2FlutterPlugin = Obd2FlutterPlugin();
+  final logger = Logger("MyApp");
 
   @override
   void initState() {
@@ -27,13 +29,26 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    int fuelLevel;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
+    //* Get bounded bluetooth devices
+    List<String> devices;
     try {
-      fuelLevel = await _obd2FlutterPlugin.getFuelLevel() ?? -1;
+      devices = await _obd2FlutterPlugin.getBluetoothDevices() ?? List.empty();
+      logger.log("Got devices: $devices");
     } on PlatformException {
-      fuelLevel = -2;
+      logger.log("Error getting bluetooth devices");
+      return;
+    }
+
+    // todo: Connect to target device
+
+    // todo: Init the target device
+
+    //* Fuel level
+    String fuelLevel;
+    try {
+      fuelLevel = await _obd2FlutterPlugin.getFuelLevel() ?? "-1";
+    } on PlatformException {
+      fuelLevel = "UNKNOWN";
     }
 
     // If the widget was removed from the tree while the asynchronous platform

@@ -16,7 +16,7 @@ void main() {
 
   testWidgets('getPlatformVersion test', (WidgetTester tester) async {
     final Obd2FlutterPlugin plugin = Obd2FlutterPlugin();
-    final int carFuelLevel = await plugin.getFuelLevel() ?? -1;
+    final String carFuelLevel = await plugin.getFuelLevel() ?? "";
     // The version string depends on the host platform running the test, so
     // just assert that some non-empty string is returned.
     expect(carFuelLevel, true);
