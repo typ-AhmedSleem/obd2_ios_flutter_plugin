@@ -4,9 +4,9 @@
  * Turn-off headers.
  *
  */
-class HeadersOffCommand : ObdCommand {
+class HeadersOffCommand : ObdProtocolCommand {
 
-    public override init() {
+    public init() {
         super.init("AT H0")
     }
 

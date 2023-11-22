@@ -4,9 +4,9 @@
  * Turn-off echo.
  *
  */
-class EchoOffCommand : ObdCommand {
+class EchoOffCommand : ObdProtocolCommand {
 
-    public override init() {
+    public init() {
         super.init("AT E0")
     }
 

@@ -13,9 +13,9 @@
  * Once the protocol has been closed, it can be re-opened by making a
  * request such as 01 00 (do not send ATZ or AT SP0, as many do).
  */
-class CloseCommand : ObdCommand {
+class CloseCommand : ObdProtocolCommand {
 
-    public override init() {
+    public init() {
         super.init("AT PC")
     }
 
