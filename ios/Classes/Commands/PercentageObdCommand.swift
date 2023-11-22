@@ -9,15 +9,15 @@ import Foundation
 
 open class PercentageObdCommand : ObdCommand {
     
-    private var percentage: Double = 0.0
+    var percentage: Double = 0.0
 
-    public override init(command: String) {
-        super.init(command: command)
+    public override init(_ command: String) {
+        super.init(command)
     }
 
-    public override func performCalculations() {
+    override func performCalculations() async {
         // ignore first two bytes [hh hh] of the response
-        self.percentage = (buffer[2] * 100.0) / 255.0;
+        self.percentage = (buffer[2] as! Double * 100.0) / 255.0;
     }
 
     public override func getFormattedResult() -> String {
