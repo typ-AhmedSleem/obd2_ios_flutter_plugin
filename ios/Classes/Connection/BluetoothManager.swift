@@ -5,7 +5,7 @@ class BluetoothManager : NSObject {
 
     //* Global runtime
     private let logger = Logger("BLEManager")
-    private let responseStation: ResponseStation
+    private let responseStation =  ResponseStation(queueSize: 50)
     private var delegate: BluetoothManagerDelegate?
     private var boundedDevices: [String: CBPeripheral] = [:]
     private var scannedDevicesUUIDs: [UUID] = []
@@ -40,7 +40,6 @@ class BluetoothManager : NSObject {
     public init(delegate: BluetoothManagerDelegate?) {
         super.init()
         self.delegate = delegate
-        self.responseStation = ResponseStation(queueSize: 50)
         self.centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionShowPowerAlertKey: true])
         logger.log("BLEManager has been initialized. State is: \(self.state)")
     }
@@ -160,7 +159,9 @@ extension BluetoothManager: CBCentralManagerDelegate {
             self.obdAdapter = peripheral
             self.boundedDevices[address.uuidString] = peripheral
             // Connect to adapter
-            self.connect(target: address)
+            Task {
+                await self.connect(target: address.uuidString)
+            }
         }
     }
     
