@@ -31,10 +31,10 @@ class ResponsePacket {
 * to the caller that want to consume it.
 * 
 */
-class ResponseStation : ResponseConsumer {
+class ResponseStation {
 
     //* Runtime
-    private let queue: [Data]
+    private var queue = [ResponsePacket]()
     public let maxQueueSize: Int
     public var queueSize: Int {
         get {
@@ -52,7 +52,7 @@ class ResponseStation : ResponseConsumer {
     public func push(packet responsePacket: ResponsePacket) {
         //* Remove the very first packet and push the new one
         if self.queueSize >= self.maxQueueSize {
-            self.consumeResponse()
+            self.consume()
         }
         self.queue.append(responsePacket)
     }
