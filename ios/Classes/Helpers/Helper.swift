@@ -6,14 +6,12 @@ class Logger {
 
     private let TAG : String
 
-    public required init(tag: String) {
+    public required init(_ tag: String) {
         self.TAG = tag
     }
 
-    public func log(msg: Any?) {
-        if msg == nil {
-            return
-        }
+    public func log(_ msg: String?) {
+        guard let msg = msg else { return }
         print("[\(self.TAG)]: \(msg)")
     }
 
@@ -88,7 +86,8 @@ class JSONHelper {
 class ASCIIHelper {
 
     public static func byteToASCII(byte: UInt8) -> Character? {
-        guard let scalar = UnicodeScalar(byte) else { return nil }
+        let scalar = UnicodeScalar(byte)
+        //guard let scalar = scalar else { return nil }
         return Character(scalar)
     }
 }
