@@ -9,18 +9,19 @@ import CoreBluetooth
 
 open class ObdCommand {
     
-    // Obd command variables
+    private let logger: Logger
+    //* Obd command variables
     internal let buffer : NSMutableArray
     public let cmd : String
     public var useImperialUnits : Bool
     internal var rawData : String?
     public var responseDelayInMs : Int
-    internal var timeStart : Int
-    internal var timeEnd : Int
+    internal var timeStart : Int64
+    internal var timeEnd : Int64
     
     private let MAX_RESPONSE_DELAY = 250
 
-    public init(command: String) {
+    public init(_ command: String) {
         self.buffer = NSMutableArray()
         self.cmd = command
         self.useImperialUnits = true
@@ -28,22 +29,14 @@ open class ObdCommand {
         self.responseDelayInMs = 0
         self.timeStart = -1
         self.timeEnd = -1
-    }
-    
-    private func executeWithTimeout(bleManager: BluetoothManager, expectResponse: Bool) async -> String? {
-        do {
-            let timeout: TimeInterval = self.responseDelayInMs / 1000
-            let response = try await withTaskCancellationHandler(timeoutDuration: timeout) { ck in
-                return try await self.execute(bleManager, expectResponse)
-            }
-            return response
-        } catch {
-            logger.log("Error while executing command: \(error)")
-            return nil
-        }
+        self.logger = Logger("ObdCommand::\(command)")
     }
 
-    public func execute(bleManager: BluetoothManager, expectResponse: Bool) async -> String? {
+    /** Executes the holding command and return its response if expecting.
+    *!  CAUTION: This method doesn't check for channels or adapter connection
+    *!  so, when calling it, you must ensure that adapter is connected and channel was discovered and open
+    */
+    func execute(bleManager: BluetoothManager, expectResponse: Bool) async -> String? {
         do {    
             // Time the start of execution
             self.timeStart = TimeHelper.currentTimeInMillis()
@@ -51,17 +44,17 @@ open class ObdCommand {
             try await self.sendCommand(bm: bleManager)
             // Hold thread for a delay if presented
             if self.responseDelayInMs > 0 {
-                try await Task.sleep(nanoseconds: self.responseDelayInMs * 1_000_000)
+                try await Task.sleep(nanoseconds: UInt64(self.responseDelayInMs * 1_000_000))
             }
             var response: String? = nil
             if expectResponse {
                 // Read the result by calling readResult
-                response = try await self.readResult(bm: bleManager)
+                response = try await self.readResult(bluetoothManager: bleManager)
             }
             // Time the end of execution
             self.timeEnd = TimeHelper.currentTimeInMillis()
             // log
-            logger.log("Executed: cmd='\(self.cmd)', res='\(self.response)' took= \(self.timeEnd - self.timeStart) ms")
+            logger.log("Executed: cmd='\(self.cmd)', res='\(self.getFormattedResult())' took= \(self.timeEnd - self.timeStart) ms")
             return response
         } catch {
             logger.log("Error while executing command: \(error)")
@@ -73,27 +66,29 @@ open class ObdCommand {
      * Sends the OBD-II request.
      */
     private func sendCommand(bm: BluetoothManager) async throws {
-        try await bm.send(cmd: self.cmd)
+        try await bm.send(dataToSend: self.cmd)
     }
     
     /**
      * Reads the OBD-II response.
      */
-    private func readResult(bluetoothManager: bluetoothManager) async throws {
+    private func readResult(bluetoothManager: BluetoothManager) async throws -> String? {
         await self.readRawBytes(bm: bluetoothManager)
         try await self.checkForErrors()
         await self.fillBuffer()
         await performCalculations()
+        return self.getFormattedResult()
     }
     
     private func readRawBytes(bm bleManager: BluetoothManager) async {
-        // todo: Check latest ResponseHolder instance in BLEManager
-        // todo: Consume that response if not yet consumed
+        //* Consume the very first packet on ResponseStation instance
+        let packet = bleManager.consumeNextResponse()
+        self.rawData = packet.decodePayload()
     }
     
     private func checkForErrors() async throws {
         if self.rawData == nil {
-            return
+            throw NoDataError()
         }
         let errors = [
             NoDataError(),
@@ -107,8 +102,8 @@ open class ObdCommand {
         ]
         //* Iterate over errors and check response against every single possible error
         for error in errors {
-            error.setCommand(self)
-            if error.check(self.rawData) {
+            error.setCommand(command: self.cmd)
+            if error.check(response: self.rawData ?? "") {
                 throw error
             }
         }
@@ -118,7 +113,7 @@ open class ObdCommand {
      * Resolves the rawData of response and fill buffer with valid response bytes
      */
     private func fillBuffer() async {
-        fatalError("Not yet implemented")
+        logger.log("fillBuffer: NOT YET IMPLEMENTED")
     }
     
     /**
@@ -133,7 +128,7 @@ open class ObdCommand {
         fatalError("This method should be overridden.")
     }
 
-    public func getResult() -> String {
+    public func getResult() -> String? {
         return self.rawData
     }
 

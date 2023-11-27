@@ -7,7 +7,7 @@
 class FuelLevelCommand : PercentageObdCommand {
     
     public init() {
-        super.init(command: "01 2F")
+        super.init("01 2F")
     }
 
     public convenience init(delay: Int) {
@@ -15,12 +15,12 @@ class FuelLevelCommand : PercentageObdCommand {
         self.responseDelayInMs = delay
     }
 
-    public override func performCalculations() {
+    public override func performCalculations() async {
         // ignore first two bytes [hh hh] of the response
-        self.percentage = (buffer[2] * 100.0) / 255.0;
+        self.percentage = (buffer[2] as! Double * 100.0) / 255.0;
     }
 
-    public override func getResultUnit() {
+    public override func getResultUnit() -> String {
         if self.useImperialUnits {
             return "Litres"
         }else {
