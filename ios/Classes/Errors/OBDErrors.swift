@@ -15,22 +15,24 @@ class ResponseError : Error {
     init(message: String, matchRegex:Bool) {
         self.message = message
         self.matchRegex = matchRegex
+        self.response = ""
     }
 
     convenience init(message: String) {
         self.init(message: message, matchRegex: false)
     }
 
-    public static func clean(content: String?) -> String {
-        return content == nil ? "" : content.replacingOccurrences(of: "\\s", with: "").uppercased()
+    public static func clean(_ content: String?) -> String {
+        guard let content = content else { return "" }
+        return content.replacingOccurrences(of: "\\s", with: "").uppercased()
     }
 
     public func check(response: String) -> Bool {
         self.response = response
         if self.matchRegex {
-            return RegexMatcher.isMatchingRegex(inputString: clean(self.response), regexPattern: clean(self.message))
+            return RegexMatcher.isMatchingRegex(inputString: ResponseError.clean(self.response), regexPattern: ResponseError.clean(self.message))
         } else {
-            return clean(self.response).contains(self.message)
+            return ResponseError.clean(self.response).contains(self.message)
         }
     }
 
@@ -38,7 +40,7 @@ class ResponseError : Error {
         self.command = command
     }
 
-    public func getPrintableErrorMessage() {
+    public func getPrintableErrorMessage() -> String {
         return "Error running \(self.command), response: \(self.response)"
     }
 
@@ -50,7 +52,7 @@ class ResponseError : Error {
  */
 class NoDataError : ResponseError {
     init() {
-        super.init(message: "NO DATA")
+        super.init(message: "NO DATA", matchRegex: false)
     }
 }
 
@@ -60,7 +62,7 @@ class NoDataError : ResponseError {
  */
 class BusInitError : ResponseError {
     init() {
-        super.init(message: "BUS INIT... ERROR")
+        super.init(message: "BUS INIT... ERROR", matchRegex: false)
     }
 }
 
@@ -70,7 +72,7 @@ class BusInitError : ResponseError {
  */
 class MisunderstoodCommandError : ResponseError {
     init() {
-        super.init(message: "?")
+        super.init(message: "?", matchRegex: false)
     }
 }
 
@@ -80,7 +82,7 @@ class MisunderstoodCommandError : ResponseError {
  */
 class InvalidResponseError : ResponseError {
     init() {
-        super.init(message: "Invalid response received")
+        super.init(message: "Invalid response received", matchRegex: false)
     }
 }
 
@@ -90,7 +92,7 @@ class InvalidResponseError : ResponseError {
  */
 class StoppedError : ResponseError {
     init() {
-        super.init(message: "STOPPED")
+        super.init(message: "STOPPED", matchRegex: false)
     }
 }
 
@@ -100,7 +102,7 @@ class StoppedError : ResponseError {
  */
 class UnableToConnectError : ResponseError {
     init() {
-        super.init(message: "UNABLE TO CONNECT")
+        super.init(message: "UNABLE TO CONNECT", matchRegex: false)
     }
 }
 
@@ -110,7 +112,7 @@ class UnableToConnectError : ResponseError {
  */
 class UnknownError : ResponseError {
     init() {
-        super.init(message: "ERROR")
+        super.init(message: "ERROR", matchRegex: false)
     }
 }
 
