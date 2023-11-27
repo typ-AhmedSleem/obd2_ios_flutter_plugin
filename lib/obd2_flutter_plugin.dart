@@ -1,7 +1,7 @@
 import 'obd2_flutter_plugin_platform_interface.dart';
 
 class Obd2FlutterPlugin {
-  Future<List<String>?> getBluetoothDevices() {
+  Future<List<Object?>> getBluetoothDevices() {
     return Obd2FlutterPluginPlatform.instance.getBLEDevices();
   }
 

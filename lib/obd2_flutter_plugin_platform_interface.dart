@@ -25,7 +25,7 @@ abstract class Obd2FlutterPluginPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<List<String>?> getBLEDevices() {
+  Future<List<Object?>> getBLEDevices() {
     throw UnimplementedError(
         "getBLEDevices() should be overridden not called from base interface");
   }
