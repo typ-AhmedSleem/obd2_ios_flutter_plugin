@@ -1,8 +1,8 @@
 // Created by AhmedSleem
 
-class SelectProtocolCommand : ObdCommand {
+class SelectProtocolCommand : ObdProtocolCommand {
 
-    public override init(obdProtocol: String) {
+    public init(obdProtocol: String) {
         super.init("AT SP \(obdProtocol)")
     }
 

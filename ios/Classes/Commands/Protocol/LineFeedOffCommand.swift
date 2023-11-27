@@ -4,9 +4,9 @@
  * Turns off line-feed.
  *
  */
-class LineFeedOffCommand : ObdCommand {
+class LineFeedOffCommand : ObdProtocolCommand {
 
-    public override init() {
+    public init() {
         super.init("AT L0")
     }
 
