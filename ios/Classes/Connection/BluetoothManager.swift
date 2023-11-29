@@ -28,7 +28,7 @@ class BluetoothManager : NSObject {
     }
     public var isChannelOpened: Bool {
         get {
-            return self.connected && self.obdChannel != nil
+            return self.connected && !self.channels.isEmpty
         }
     }
     public var isScanning: Bool {
@@ -77,15 +77,15 @@ class BluetoothManager : NSObject {
     public func connect(target address: String?) async -> Bool {
         if !self.isInitialized {
             //* Not initialized. Report Bluetooth either poweredOff, unsupported or has error
+            logger.log("BluetoothManager isn't initialized. CurrentState: \(self.state)")
             return false
         }
         if self.connected {
             //* Already connected. No need to connect again
-            logger.log("Already connected")
+            logger.log("Adapter is already connected")
             return true
         }
         if self.obdAdapter == nil {
-            guard address != nil else { return false }
             if let address = address {
                 //* Retrieve device in bounded devices first
                 self.obdAdapter = self.boundedDevices[address]
@@ -99,11 +99,9 @@ class BluetoothManager : NSObject {
                 return false
             }
         }
+        logger.log("Connecting to adapter...")
         //* Connect to adapter
-        self.centralManager?.connect(obdAdapter!, options: [
-            CBConnectPeripheralOptionNotifyOnDisconnectionKey: true,
-            CBConnectPeripheralOptionNotifyOnConnectionKey: true
-        ])
+        self.centralManager?.connect(obdAdapter!, options: nil)
         return self.connected
     }
 
@@ -115,30 +113,50 @@ class BluetoothManager : NSObject {
     */
     private func discoverCharacteristics(client: CBPeripheral?) {
         if let services = client?.services {
-            logger.log("===== START CHARACTERISTICS DISCOVERY =====")
+            logger.log("===== START SERVICE DISCOVERY =====")
             for service in services {
-                logger.log("\tTrying with service: \(service.uuid)")
+                logger.log("\tDiscovering characteristics of service: \(service.uuid)")
                 //* Discover our chars with our specific UUIDs
                 client?.discoverCharacteristics(nil, for: service)
-                if service.uuid == UUIDs.serviceUUID || service.uuid == UUIDs.charUUID {
-                }
             }
-            logger.log("===== END CHARACTERISTICS DISCOVERY =====")
+            logger.log("===== END SERVICE DISCOVERY =====")
         }
     }
 
     public func send(dataToSend: String) async throws {
         //* Check if device is connected and at least only one characteristics has been discovered
-        guard self.obdChannel != nil else { throw CommandExecutionError() }
+        guard self.isChannelOpened else {
+            logger.log("Neither adapter is connected nor at least one channel is opened.")
+            throw CommandExecutionError()
+        }
         //* Get the bytes of the data to be sent encoded in utf8 format
-        guard let data = dataToSend.data(using: .utf8) else { throw CommandExecutionError() }
-        guard let adapter = obdAdapter, let channel = obdChannel else { throw CommandExecutionError()  }
+        guard let data = dataToSend.data(using: .utf8) else { 
+            logger.log("Can't send empty data.")
+            throw CommandExecutionError()
+        }
         //* Send data adapter
-        adapter.writeValue(data, for: channel, type: .withResponse)
+        if let adapter = obdAdapter {
+            for channel in self.channels.keys {
+                if let chr = self.channels[channel] {
+                    if chr.properties.contains(.write) {
+                        logger.log("Writing with response: '\(String(data: data, encoding: .utf8) ?? "")' to channel: '\(channel)'")
+                        adapter.writeValue(data, for: chr, type: .withResponse)
+                        return
+                    }                  
+                    if chr.properties.contains(.writeWithoutResponse) {
+                        logger.log("Writing without response: '\(String(data: data, encoding: .utf8) ?? "")' to channel: '\(channel)'")
+                        adapter.writeValue(data, for: chr, type: .withoutResponse)
+                        return
+                    }
+                }
+            }
+        }
     }
 
     public func consumeNextResponse() -> ResponsePacket {
-        return self.responseStation.consume()
+        let response = self.responseStation.consume()
+        logger.log("Consumed a response packet. Payload: '\(response.decodePayload())'")
+        return response
     }
 
 }
@@ -159,9 +177,12 @@ extension BluetoothManager: CBCentralManagerDelegate {
             self.obdAdapter = peripheral
             self.boundedDevices[address.uuidString] = peripheral
             // Connect to adapter
-            Task {
-                await self.connect(target: address.uuidString)
-            }
+            //logger.log("Connecting to adapter...")
+            //* Connect to adapter
+            //self.centralManager?.connect(obdAdapter!, options: nil)
+//            Task {
+//                await self.connect(target: address.uuidString)
+//            }
         }
     }
     
@@ -171,7 +192,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
     }
 
     /** [DELEGATED] Called when a successful connection with the OBD adapter was established */
-    func centralManager( central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         //* Discover services
         self.connected = true
         self.obdAdapter?.delegate = self
@@ -218,8 +239,8 @@ extension BluetoothManager : CBPeripheralDelegate {
         for characteristic in characteristics {
             // todo: If we need to subscribe to this channel, uncomment the line below
             // characteristic.setNotifyValue(true)
-            let uuid = characteristic.uuid.uuidString
             self.channels[uuid] = characteristic
+            let uuid = characteristic.uuid.uuidString
             logger.log("Discovered a characteristic: \(uuid)")
         }
     }
@@ -233,14 +254,16 @@ extension BluetoothManager : CBPeripheralDelegate {
         if let response = characteristic.value {
             let responsePacket = ResponsePacket(payload: response)
             self.responseStation.push(packet: responsePacket)
-            logger.log("Pushed a new packet to the station. Payload: \(responsePacket.decodePayload()) | Station now has \(self.responseStation.queueSize)/\(self.responseStation.maxQueueSize) packets.")
+            logger.log("Pushed a new packet to the station. Payload: \(responsePacket.decodePayload()) | Station now has \(self.responseStation.queueSize) of \(self.responseStation.maxQueueSize) packets.")
         }
     }
 
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
+        let channelId = characteristic.uuid.uuidString
         if let error = error {
-            logger.log("Error sending data: \(error)")
+            logger.log("Error writing to channel: \(channelId) | Reason: \(error)")
         }
+        logger.log("Wrote something to channel: \(channelId)")
     }
 
 }
