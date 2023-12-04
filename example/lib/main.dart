@@ -52,7 +52,7 @@ class _MyAppState extends State<MyApp> {
                     // Resolve received devices
                     var rawDevices = await _obd2FlutterPlugin.getBluetoothDevices();
                     var devices = rawDevices.map<BluetoothDevice>((d) => BluetoothDevice.fromJson(d as String? ?? ""));
-                    logger.log("Got: raw=${rawDevices.length} -> resolved=${devices.length} Devices");
+                    logger.log("Got: raw=${rawDevices.length} -> resolved=${devices.length} Devices | runtimeType=${devices.runtimeType}");
                     // Try to find the adapter by its name in the list
                     String? tempAddress;
                     for (var device in devices) {
@@ -133,7 +133,7 @@ class BluetoothDevice {
   BluetoothDevice({required this.name, required this.address});
 
   static BluetoothDevice fromJson(String jsonDevice) {
-    final Map<String, String> parsedDevice = json.decode(jsonDevice);
+    var parsedDevice = json.decode(jsonDevice);
     return BluetoothDevice(name: parsedDevice['name'] ?? "", address: parsedDevice['address'] ?? "");
   }
 }
