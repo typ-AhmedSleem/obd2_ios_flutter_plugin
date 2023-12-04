@@ -4,6 +4,7 @@ import UIKit
 public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
 
   private var obd2 = OBD2()
+  private var logger = Logger("OBD2Plugin")
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let bluetoothChannel = FlutterMethodChannel(name: MethodChannelsNames.BLUE_DEVICES, binaryMessenger: registrar.messenger())
@@ -39,26 +40,25 @@ public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
     }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-      print("[PLUGIN]: Got call=\(call.method) | args=\(String(describing: call.arguments))")
+      logger.log("[PLUGIN]: Got call=\(call.method) | args=\(String(describing: call.arguments))")
     switch call.method {
       case MethodsNames.SCAN_BLUETOOTH_DEVICES:
         if self.obd2.isBLEManagerInitialized {
           do {
             let devices: [String] = obd2.bluetoothManager?.retrieveBoundedBluetoothDevicesSerialized() ?? []
               if devices.isEmpty {
-                  print("No bounded devices found. Scanning for devices...")
+                  logger.log("No bounded devices found. Scanning for devices...")
                   self.obd2.bluetoothManager?.scanForDevices()
               } else {
-                  print("[PLUGIN]: Retrieved devices= \(devices)")
+                  logger.log("Retrieved \(devices.count) bluetooth device.")
               }
               result(devices)
           } catch {
             let emptyDevicesList: [String] = []
-            print("Can't get BLE devices")
             result(emptyDevicesList)
           }
         } else {
-            print("Bluetooth isn't initialized")
+            logger.log("Bluetooth isn't initialized")
             //* If we reached this point, it means that BLE manager hasn't yet been initialized. So, result an error
             result(FlutterError(
               code: "400",
@@ -72,14 +72,12 @@ public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
           //? Flutter will send me device address in args
             let address = call.arguments as? String
             guard let address = address else { throw CantConnectError() }
-            
             self.connect(address) { res in
                 switch res {
                 case .success(let connected):
-                    print(connected ? "Connected" : "Not connected")
                     result(connected)
                 case .failure(let error):
-                    print(error)
+                    logger.log(error)
                     result(FlutterError())
                 }
             }
@@ -96,10 +94,10 @@ public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
             self.initializeOBD() { res in
                 switch res {
                 case .success(let initialized):
-                    print("Initialized")
+                    logger.log("Initialized")
                     result(initialized)
                 case .failure(let error):
-                    print(error)
+                    logger.log(error)
                     result(FlutterError(
                         code: "400",
                         message: "Can't initialize adapter",
@@ -119,10 +117,9 @@ public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
             self.getFuelLevel() { res in
                 switch res {
                 case .success(let fuelLevel):
-                    print("Got fuel level: \(fuelLevel)")
+                    logger.log("Got fuel level: \(fuelLevel)")
                     result(fuelLevel)
                 case .failure(let error):
-                    print("Error getting fuelLevel: \(error.message)")
                     result("UNKNOWN")
                 }
             }
