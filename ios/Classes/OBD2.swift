@@ -11,7 +11,7 @@ class OBD2 : NSObject {
 
     //* Global runtime
     private let logger = Logger("OBD2")
-    private var delegate: OBD2Delegate?
+    var delegate: OBD2Delegate?
     private let executionQueue = DispatchQueue(label: "com.typ.obd.OBD2Queue")
 
     //* BluetoothManager runtime
@@ -25,8 +25,9 @@ class OBD2 : NSObject {
 
     override init() {
         super.init()
+        self.delegate = self
         self.initBluetoothManager()
-        logger.log("Created OBD2 instance.")
+        logger.log("Created a new OBD2 instance.")
     }
 
     public func initBluetoothManager() {
@@ -48,6 +49,7 @@ class OBD2 : NSObject {
     * Executes sequence of commands to initialize the OBD adapter after successfully connecting to it
     */
     public func initializeOBD() async {
+        logger.log("Initializing adapter...")
         //self.executionQueue.sync  {
             let initialCommands = [
                 EchoOffCommand(),
@@ -56,6 +58,7 @@ class OBD2 : NSObject {
                 SelectProtocolCommand(obdProtocol: ObdProtocols.AUTO)
             ]
             for command in initialCommands {
+                logger.log("(initializeOBD): Executing '\(command.cmd)' ...")
                 await self.executeCommand(command, expectResponse: false)
             }
        // }
@@ -67,6 +70,7 @@ class OBD2 : NSObject {
             //self.executionQueue.sync {
             if let bm = self.bluetoothManager {
                 if !bm.isChannelOpened {
+                    logger.log("Channel is closed")
                     return nil
                 }
                 self.delegate?.onCommandExecuted(command, hasResponse: expectResponse)
@@ -76,6 +80,7 @@ class OBD2 : NSObject {
             }
             //}
         } else {
+            logger.log("Command is nil")
             return nil
         }
     }
@@ -106,7 +111,20 @@ extension OBD2: BluetoothManagerDelegate {
     }
     
     func onAdapterReceiveResponse(response: String?) {
-        logger.log("Adapter received response: \(response)")
+        logger.log("Adapter received response: \(String(describing: response))")
     }
 
+}
+
+
+extension OBD2: OBD2Delegate {
+    func onCommandExecuted(_ command: ObdCommand, hasResponse: Bool) {
+        // logger.log("Command \(command.cmd) executed")
+    }
+    
+    func onResponseReceived(_ command: ObdCommand, response: String?) {
+        
+    }
+    
+    
 }
