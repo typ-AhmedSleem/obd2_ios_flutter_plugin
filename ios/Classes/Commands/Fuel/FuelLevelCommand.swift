@@ -17,15 +17,19 @@ class FuelLevelCommand : PercentageObdCommand {
 
     public override func performCalculations() async {
         // ignore first two bytes [hh hh] of the response
-        self.percentage = (buffer[2] as! Double * 100.0) / 255.0;
-    }
-
-    public override func getResultUnit() -> String {
-        if self.useImperialUnits {
-            return "Litres"
-        }else {
-            return "Gallons"
+        if buffer.count >= 3 {
+            self.percentage = (buffer[2] as! Double * 100.0) / 255.0;
+        } else {
+            self.percentage = 0.0
         }
     }
+
+//    public override func getResultUnit() -> String {
+//        if self.useImperialUnits {
+//            return "Litres"
+//        }else {
+//            return "Gallons"
+//        }
+//    }
 
 }

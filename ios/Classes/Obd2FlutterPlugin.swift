@@ -30,7 +30,7 @@ public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
     
     private func getFuelLevel(callback: @escaping (Result<String, ResponseError>) -> Void) {
         Task {
-            let fuelLevel = await self.obd2.executeCommand(FuelLevelCommand(delay: 100), expectResponse: true)
+            let fuelLevel = await self.obd2.getFuelLevel()
             guard let fuelLevel = fuelLevel else {
                 callback(.failure(ResponseError(message: "Can't get fuelLevel", matchRegex: false)))
                 return
@@ -77,7 +77,7 @@ public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
                 case .success(let connected):
                     result(connected)
                 case .failure(let error):
-                    logger.log(error)
+                    self.logger.log(String(describing: error))
                     result(FlutterError())
                 }
             }
@@ -91,13 +91,13 @@ public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
       case MethodsNames.INIT_ADAPTER:
         //* This method result nothing and idk why :)
         do {
-            self.initializeOBD() { res in
+            self.initializeOBD() { [self] res in
                 switch res {
                 case .success(let initialized):
                     logger.log("Initialized")
                     result(initialized)
                 case .failure(let error):
-                    logger.log(error)
+                    logger.log(String(describing: error))
                     result(FlutterError(
                         code: "400",
                         message: "Can't initialize adapter",
@@ -117,7 +117,7 @@ public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
             self.getFuelLevel() { res in
                 switch res {
                 case .success(let fuelLevel):
-                    logger.log("Got fuel level: \(fuelLevel)")
+                    self.logger.log("Got fuel level: \(fuelLevel)")
                     result(fuelLevel)
                 case .failure(let error):
                     result("UNKNOWN")

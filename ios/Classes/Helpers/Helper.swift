@@ -90,6 +90,15 @@ class ASCIIHelper {
         //guard let scalar = scalar else { return nil }
         return Character(scalar)
     }
+    
+    public static func hexToASCII(hex: String) -> Int {
+        if let ascii = Int(hex, radix: 16) {
+            return ascii
+        } else {
+            return -1
+        }
+    }
+    
 }
 
 extension [String: String] {   

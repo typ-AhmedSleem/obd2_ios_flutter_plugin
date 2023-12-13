@@ -84,6 +84,13 @@ class OBD2 : NSObject {
             return nil
         }
     }
+    
+    public func getFuelLevel() async -> String? {
+        let fuelLevel = await self.executeCommand(FuelLevelCommand(delay: 100), expectResponse: true)
+        
+        
+        return fuelLevel
+    }
 
 }
 
