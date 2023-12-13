@@ -141,13 +141,14 @@ class BluetoothManager : NSObject {
                     if chr.properties.contains(.write) {
                         logger.log("Writing with response: '\(String(data: data, encoding: .utf8) ?? "")' to channel: '\(channel)'")
                         adapter.writeValue(data, for: chr, type: .withResponse)
-                        return
-                    }                  
+                        continue
+                    }
                     if chr.properties.contains(.writeWithoutResponse) {
                         logger.log("Writing without response: '\(String(data: data, encoding: .utf8) ?? "")' to channel: '\(channel)'")
                         adapter.writeValue(data, for: chr, type: .withoutResponse)
-                        return
+                        continue
                     }
+                    self.logger.log("Charac: \(chr.uuid.uuidString) has value: \(ResponsePacket(payload: chr.value ?? Data()).decodePayload())")
                 }
             }
         }
@@ -238,9 +239,9 @@ extension BluetoothManager : CBPeripheralDelegate {
         guard let characteristics = service.characteristics else { return }
         for characteristic in characteristics {
             // todo: If we need to subscribe to this channel, uncomment the line below
-            // characteristic.setNotifyValue(true)
-            self.channels[uuid] = characteristic
+            peripheral.setNotifyValue(true, for: characteristic)
             let uuid = characteristic.uuid.uuidString
+            self.channels[uuid] = characteristic
             logger.log("Discovered a characteristic: \(uuid)")
         }
     }
@@ -254,7 +255,7 @@ extension BluetoothManager : CBPeripheralDelegate {
         if let response = characteristic.value {
             let responsePacket = ResponsePacket(payload: response)
             self.responseStation.push(packet: responsePacket)
-            logger.log("Pushed a new packet to the station. Payload: \(responsePacket.decodePayload()) | Station now has \(self.responseStation.queueSize) of \(self.responseStation.maxQueueSize) packets.")
+            logger.log("Pushed a new packet to the station. Payload: (\(responsePacket.decodePayload())) | Station now has \(self.responseStation.queueSize) of \(self.responseStation.maxQueueSize) packets.")
         }
     }
 
