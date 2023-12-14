@@ -1,0 +1,84 @@
+[VERBOSE-2:FlutterDarwinContextMetalImpeller.mm(37)] Using the Impeller rendering backend.
+[BLEManager]: BLEManager has been initialized. State is: CBManagerState(rawValue: 0)
+[OBD2]: Created a new OBD2 instance.
+[BLEManager]: BLE state has changed: CBManagerState(rawValue: 5)
+flutter: The Dart VM service is listening on http://127.0.0.1:62674/A6DIf1lHDkE=/
+[OBD2Plugin]: [PLUGIN]: Got call=scan | args=nil
+[BLEManager]: Found 0 device.
+[BLEManager]: retrieveBoundedBluetoothDevicesSerialized: []
+[OBD2Plugin]: No bounded devices found. Scanning for devices...
+flutter: [MyApp]: Got: raw=0 -> resolved=0 Devices | runtimeType=MappedListIterable<Object?, BluetoothDevice>
+[BLEManager]: 
+Discovered BLE device: KONNWEI | 4B59AAD7-6A5E-43AB-FEFC-FD302278589F
+[BLEManager]: Found adapter at address: 4B59AAD7-6A5E-43AB-FEFC-FD302278589F
+[OBD2Plugin]: [PLUGIN]: Got call=CONNECT | args=Optional()
+[BLEManager]: Connecting to adapter...
+flutter: [MyApp]: Connect to adapter
+[OBD2]: Adapter connected.
+[BLEManager]: Connected to 4B59AAD7-6A5E-43AB-FEFC-FD302278589F
+[BLEManager]: ===== START SERVICE DISCOVERY =====
+[BLEManager]: 	Discovering characteristics of service: Device Information
+[BLEManager]: 	Discovering characteristics of service: FFF0
+[BLEManager]: ===== END SERVICE DISCOVERY =====
+[BLEManager]: Discovered a characteristic: 2A29
+[BLEManager]: Discovered a characteristic: 2A24
+[BLEManager]: Discovered a characteristic: 2A25
+[BLEManager]: Discovered a characteristic: 2A23
+[BLEManager]: Discovered a characteristic: 2A2A
+[BLEManager]: Discovered a characteristic: FFF1
+[BLEManager]: Discovered a characteristic: FFF2
+[OBD2Plugin]: [PLUGIN]: Got call=CONNECT | args=Optional()
+[BLEManager]: Adapter is already connected
+flutter: [MyApp]: Connected to adapter
+[OBD2Plugin]: [PLUGIN]: Got call=INIT | args=nil
+[OBD2]: Initializing adapter...
+[OBD2]: (initializeOBD): Executing 'AT E0' ...
+[ObdCommand::AT E0]: Sending command: AT E0
+[BLEManager]: Charac: FFF2 has value: 
+[BLEManager]: Writing without response: 'AT E0' to channel: 'FFF2'
+[BLEManager]: Charac: 2A2A has value: 
+[BLEManager]: Charac: 2A29 has value: 
+[BLEManager]: Charac: 2A24 has value: 
+[BLEManager]: Charac: FFF1 has value: 
+[BLEManager]: Charac: 2A25 has value: 
+[BLEManager]: Charac: 2A23 has value: 
+[ObdCommand::AT E0]: Executed: cmd='AT E0', res='NO RESULT' took= 1 ms
+[OBD2]: (initializeOBD): Executing 'AT L0' ...
+[ObdCommand::AT L0]: Sending command: AT L0
+[BLEManager]: Charac: FFF2 has value: 
+[BLEManager]: Writing without response: 'AT L0' to channel: 'FFF2'
+[BLEManager]: Charac: 2A2A has value: 
+[BLEManager]: Charac: 2A29 has value: 
+[BLEManager]: Charac: 2A24 has value: 
+[BLEManager]: Charac: FFF1 has value: 
+[BLEManager]: Charac: 2A25 has value: 
+[BLEManager]: Charac: 2A23 has value: 
+[ObdCommand::AT L0]: Executed: cmd='AT L0', res='NO RESULT' took= 0 ms
+[OBD2]: (initializeOBD): Executing 'AT ST 64' ...
+[ObdCommand::AT ST 64]: Sending command: AT ST 64
+[BLEManager]: Charac: FFF2 has value: 
+[BLEManager]: Writing without response: 'AT ST 64' to channel: 'FFF2'
+[BLEManager]: Charac: 2A2A has value: 
+[BLEManager]: Charac: 2A29 has value: 
+[BLEManager]: Charac: 2A24 has value: 
+[BLEManager]: Charac: FFF1 has value: 
+[BLEManager]: Charac: 2A25 has value: 
+[BLEManager]: Charac: 2A23 has value: 
+[ObdCommand::AT ST 64]: Executed: cmd='AT ST 64', res='NO RESULT' took= 0 ms
+[OBD2]: (initializeOBD): Executing 'AT SP 0' ...
+[ObdCommand::AT SP 0]: Sending command: AT SP 0
+[BLEManager]: Charac: FFF2 has value: 
+[BLEManager]: Writing without response: 'AT SP 0' to channel: 'FFF2'
+[BLEManager]: Charac: 2A2A has value: 
+[BLEManager]: Charac: 2A29 has value: 
+[BLEManager]: Charac: 2A24 has value: 
+[BLEManager]: Charac: FFF1 has value: 
+[BLEManager]: Charac: 2A25 has value: 
+[BLEManager]: Charac: 2A23 has value: 
+[ObdCommand::AT SP 0]: Executed: cmd='AT SP 0', res='NO RESULT' took= 0 ms
+[OBD2Plugin]: Initialized
+[BLEManager]: Pushed a new packet to the station. Payload: AT E0AT L0AT ST 64AT | Station now has 1 of 50 packets.
+[BLEManager]: Pushed a new packet to the station. Payload:  SP 0 | Station now has 2 of 50 packets.
+[BLEManager]: Pushed a new packet to the station. Payload: ?
+
+> | Station now has 3 of 50 packets.

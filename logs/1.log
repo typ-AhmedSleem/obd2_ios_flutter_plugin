@@ -1,0 +1,172 @@
+[BLEManager]: BLEManager has been initialized. State is: CBManagerState(rawValue: 0)
+[OBD2]: Created OBD2 instance.
+[BLEManager]: BLE state has changed: CBManagerState(rawValue: 5)
+[PLUGIN]: Got call=scan | args=nil
+[BLEManager]: Found 0 device.
+[BLEManager]: retrieveBoundedBluetoothDevicesSerialized: []
+No bounded devices found. Scanning for devices...
+flutter: [MyApp]: Got: raw=0 -> resolved=0 Devices | runtimeType=MappedListIterable<Object?, BluetoothDevice>
+[BLEManager]: 
+Discovered BLE device: KONNWEI | 4B59AAD7-6A5E-43AB-FEFC-FD302278589F
+[BLEManager]: Found adapter at address: 4B59AAD7-6A5E-43AB-FEFC-FD302278589F
+[PLUGIN]: Got call=scan | args=nil
+[BLEManager]: Found 1 device.
+[BLEManager]: {"name":"KONNWEI","address":"4B59AAD7-6A5E-43AB-FEFC-FD302278589F"}
+[BLEManager]: retrieveBoundedBluetoothDevicesSerialized: ["{\"name\":\"KONNWEI\",\"address\":\"4B59AAD7-6A5E-43AB-FEFC-FD302278589F\"}"]
+[PLUGIN]: Retrieved devices= ["{\"name\":\"KONNWEI\",\"address\":\"4B59AAD7-6A5E-43AB-FEFC-FD302278589F\"}"]
+flutter: [MyApp]: Got: raw=1 -> resolved=1 Devices | runtimeType=MappedListIterable<Object?, BluetoothDevice>
+flutter: [MyApp]: Trying device: KONNWEI at 4B59AAD7-6A5E-43AB-FEFC-FD302278589F
+flutter: [MyApp]: Found adapter KONNWEI at address 4B59AAD7-6A5E-43AB-FEFC-FD302278589F
+[PLUGIN]: Got call=CONNECT | args=Optional(4B59AAD7-6A5E-43AB-FEFC-FD302278589F)
+[BLEManager]: Connecting to adapter...
+Not connected
+flutter: [MyApp]: Connect to adapter
+[OBD2]: Adapter connected.
+[BLEManager]: Connected to 4B59AAD7-6A5E-43AB-FEFC-FD302278589F
+[BLEManager]: ===== START CHARACTERISTICS DISCOVERY =====
+[BLEManager]: 	Trying with service: Device Information
+[BLEManager]: 	Trying with service: FFF0
+[BLEManager]: ===== END CHARACTERISTICS DISCOVERY =====
+[BLEManager]: Discovered a characteristic: 2A29
+[BLEManager]: Discovered a characteristic: 2A24
+[BLEManager]: Discovered a characteristic: 2A25
+[BLEManager]: Discovered a characteristic: 2A23
+[BLEManager]: Discovered a characteristic: 2A2A
+[BLEManager]: Discovered a characteristic: FFF1
+[BLEManager]: Discovered a characteristic: FFF2
+[PLUGIN]: Got call=CONNECT | args=Optional(4B59AAD7-6A5E-43AB-FEFC-FD302278589F)
+[BLEManager]: Already connected
+Connected
+flutter: [MyApp]: Connected to adapter
+[PLUGIN]: Got call=INIT | args=nil
+[OBD2]: Initializing adapter...
+[ObdCommand::AT E0]: Created command: AT E0
+[ObdCommand::AT L0]: Created command: AT L0
+[ObdCommand::AT ST 64]: Created command: AT ST 64
+[ObdCommand::AT SP 0]: Created command: AT SP 0
+[OBD2]: Command AT E0 executed
+[ObdCommand::AT E0]: Sending command: AT E0
+[BLEManager]: Writing '5 bytes' to channel: FFF2
+[BLEManager]: Writing '5 bytes' to channel: 2A24
+[BLEManager]: Writing '5 bytes' to channel: 2A23
+[BLEManager]: Writing '5 bytes' to channel: 2A25
+[BLEManager]: Writing '5 bytes' to channel: 2A29
+[BLEManager]: Writing '5 bytes' to channel: 2A2A
+[BLEManager]: Writing '5 bytes' to channel: FFF1
+[ObdCommand::AT E0]: Executed: cmd='AT E0', res='NO DATA' took= 6 ms
+[OBD2]: Command AT L0 executed
+[ObdCommand::AT L0]: Sending command: AT L0
+[BLEManager]: Writing '5 bytes' to channel: FFF2
+[BLEManager]: Writing '5 bytes' to channel: 2A24
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Writing '5 bytes' to channel: 2A23
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Writing '5 bytes' to channel: 2A25
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Writing '5 bytes' to channel: 2A29
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Writing '5 bytes' to channel: 2A2A
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Writing '5 bytes' to channel: FFF1
+[ObdCommand::AT L0]: Executed: cmd='AT L0', res='NO DATA' took= 5 ms
+[OBD2]: Command AT ST 64 executed
+[ObdCommand::AT ST 64]: Sending command: AT ST 64
+[BLEManager]: Writing '8 bytes' to channel: FFF2
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Writing '8 bytes' to channel: 2A24
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Writing '8 bytes' to channel: 2A23
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Writing '8 bytes' to channel: 2A25
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Writing '8 bytes' to channel: 2A29
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Writing '8 bytes' to channel: 2A2A
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Writing '8 bytes' to channel: FFF1
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[ObdCommand::AT ST 64]: Executed: cmd='AT ST 64', res='NO DATA' took= 8 ms
+[OBD2]: Command AT SP 0 executed
+[ObdCommand::AT SP 0]: Sending command: AT SP 0
+[BLEManager]: Writing '7 bytes' to channel: FFF2
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Writing '7 bytes' to channel: 2A24
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Writing '7 bytes' to channel: 2A23
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Writing '7 bytes' to channel: 2A25
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Writing '7 bytes' to channel: 2A29
+[BLEManager]: Writing '7 bytes' to channel: 2A2A
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Writing '7 bytes' to channel: FFF1
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[ObdCommand::AT SP 0]: Executed: cmd='AT SP 0', res='NO DATA' took= 3 ms
+Initialized
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[PLUGIN]: Got call=GET_LEVEL | args=nil
+[ObdCommand::01 2F]: Created command: 01 2F
+[OBD2]: Command 01 2F executed
+[ObdCommand::01 2F]: Sending command: 01 2F
+[BLEManager]: Writing '5 bytes' to channel: FFF2
+[BLEManager]: Writing '5 bytes' to channel: 2A24
+[BLEManager]: Writing '5 bytes' to channel: 2A23
+[BLEManager]: Writing '5 bytes' to channel: 2A25
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Writing '5 bytes' to channel: 2A29
+[BLEManager]: Writing '5 bytes' to channel: 2A2A
+[BLEManager]: Writing '5 bytes' to channel: FFF1
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Error sending data: Error Domain=CBATTErrorDomain Code=3 "Writing is not permitted." UserInfo={NSLocalizedDescription=Writing is not permitted.}
+[BLEManager]: Wrote something to adapter
+[BLEManager]: Consumed a response packet
+flutter: [MyApp]: Got fuel level: UNKNOWN
+[ObdCommand::01 2F]: Error while executing command: obd2_flutter_plugin.NoDataError
+Error getting fuelLevel: Can't get fuelLevel
