@@ -9,28 +9,28 @@ import CoreBluetooth
 
 open class ObdCommand {
     
-    private let logger: Logger
-    //* Obd command variables
-    internal let buffer : NSMutableArray
+    internal let logger: Logger
+
     public let cmd : String
-    public var useImperialUnits : Bool
     internal var response : String?
+    internal var buffer : [Int] = []
+    public var useImperialUnits : Bool
     public var responseDelayInMs : Int
+    
     internal var timeStart : Int64
     internal var timeEnd : Int64
     
     private let MAX_RESPONSE_DELAY = 250
 
     public init(_ command: String) {
-        self.buffer = NSMutableArray()
+        self.buffer = []
         self.cmd = command
-        self.useImperialUnits = true
         self.response = nil
-        self.responseDelayInMs = 0
         self.timeStart = -1
         self.timeEnd = -1
-        self.logger = Logger("ObdCommand::\(command)")
-//        logger.log("Created command: \(self.cmd)")
+        self.responseDelayInMs = 0
+        self.useImperialUnits = true
+        self.logger = Logger("ObdCmd::\(command)")
     }
 
     /** Executes the holding command and return its response if expecting.
@@ -50,7 +50,7 @@ open class ObdCommand {
             var response: String? = nil
             if expectResponse {
                 // Read the result by calling readResult
-                response = try await self.readResult(bluetoothManager: bleManager)
+                response = try await self.readResult(bm: bleManager)
                 self.response = response
             }
             // Time the end of execution
@@ -67,40 +67,43 @@ open class ObdCommand {
     /**
      * Sends the OBD-II request.
      */
-    private func sendCommand(bm: BluetoothManager) async throws {
+    private func sendCommand(bm bleManager: BluetoothManager) async throws {
         logger.log("Sending command: \(self.cmd)")
         let readyCmd = self.cmd + "\r"
-        try await bm.send(dataToSend: readyCmd)
+        try await bleManager.send(dataToSend: readyCmd)
     }
     
     /**
-     * Reads the OBD-II response.
+     * Reads the OBD-II response and resolve it and return its formatted result
      */
-    private func readResult(bluetoothManager: BluetoothManager) async throws -> String? {
-        await self.readRawBytes(bm: bluetoothManager)
+    private func readResult(bm bleManager: BluetoothManager) async throws -> String? {
+        try await self.readRawBytes(bm: bleManager)
         try await self.checkForErrors()
         try await self.fillBuffer()
-        await performCalculations()
+        try await performCalculations()
         return self.getFormattedResult()
     }
     
-    private func readRawBytes(bm bleManager: BluetoothManager) async {
+    private func readRawBytes(bm bleManager: BluetoothManager) async throws {
         //* Consume the very first packet on ResponseStation instance
         let packet = bleManager.consumeNextResponse()
         var rawResponse = packet.decodePayload()
-        // Remove Searching... from response
+        guard !rawResponse.isEmpty else {
+            throw ResolverErrors.emptyResponse
+        }
+        self.logger.log("readRawBytes", "Raw response: '\(rawResponse)'")
+        // Remove Searching from response
         rawResponse = RegexMatcher.replaceInString(pattern: RegexPatterns.SEARCHING_PATTERN, original: rawResponse, replacement: "")
-        // Remove '>' from response
-        rawResponse = RegexMatcher.replaceInString(pattern: ">", original: rawResponse, replacement: "")
-        // Remove whitespaces and escape letters from response
+        // Remove whitespaces, invalid chars and escape letters from response
         rawResponse = RegexMatcher.replaceInString(pattern: RegexPatterns.WHITESPACE_PATTERN, original: rawResponse, replacement: "")
         
         self.response = rawResponse
-        self.logger.log("readRawBytes: (\(self.response ?? ""))")
+        self.logger.log("readRawBytes", "Ready raw response: '\(self.response ?? "")'")
     }
     
     public func checkForErrors() async throws {
         if self.response == nil {
+            self.logger.log("checkForErrors", "Response is empty. Aborting...")
             throw NoDataError()
         }
         let errors = [
@@ -117,10 +120,10 @@ open class ObdCommand {
         for error in errors {
             error.setCommand(command: self.cmd)
             if error.check(response: self.response ?? "") {
-                self.logger.log("checkForErrors: Check found issue \(String(describing: error)) in response.")
+                self.logger.log("checkForErrors", "Checker found \(type(of: error)) match in response")
                 throw error
             }
-            self.logger.log("checkForErrors: Passed '\(String(describing: error))'...")
+            self.logger.log("checkForErrors", "Passed '\(type(of: error))'")
         }
     }
     
@@ -128,51 +131,48 @@ open class ObdCommand {
      * Resolves the rawData of response and fill buffer with valid response bytes
      */
     private func fillBuffer() async throws {
-        var response = response ?? ResponsePacket.empty().decodePayload()
-        // Remove all whitespaces and line breaks from response
+        //* Take a copy of response
+        var response = self.response ?? ""
+        //* Remove all whitespaces and line breaks from response
         response = RegexMatcher.replaceInString(pattern: RegexPatterns.WHITESPACE_PATTERN, original: response, replacement: "")
-        // Remove BUS INIT from response
+        //* Remove BUS INIT from response
         response = RegexMatcher.replaceInString(pattern: RegexPatterns.BUSINIT_PATTERN, original: response, replacement: "")
-        // Check whether response has numeric output
+        //* Check one more time if the response is nil or empty
+        guard response != nil && !response.isEmpty else { 
+            throw ResolverErrors.emptyResponse
+        }
+        //* Check whether response has numeric output
         guard RegexMatcher.isMatchingRegex(inputString: response, regexPattern: RegexPatterns.DIGITS_LETTERS_PATTERN) else {
-            self.logger.log("fillBuffer: Response is either invalid or contains not numeric values.")
-            throw InvalidResponseError()
+            self.logger.log("fillBuffer", "Response is either invalid or contains non numeric values.")
+            throw ResolverErrors.invalidResponse
         }
-        // Resolve the response and fill buffer
+        //* Resolve the response and fill buffer
         guard let rawBytes = response.data(using: .utf8) else {
-            self.logger.log("fillBuffer: Can't decode response to byte buffer.")
-            throw InvalidResponseError()
+            self.logger.log("fillBuffer", "Can't decode response to byte buffer.")
+            throw ResolverErrors.invalidResponse
         }
-        // Check rawBytes if has even number of bytes within
         var size = rawBytes.count
+        //* Check if rawBytes has at least two bytes within  
         if size <= 1 {
-            throw InvalidResponseError()
+            throw ResolverErrors.invalidResponse
         }
+        //* Check rawBytes if has even number of bytes within
         if size % 2 != 0 {
             size -= 1
         }
         // Fill buffer
-        self.buffer.removeAllObjects()
+        self.buffer.removeAll()
         var begin = 0
         var end = 2
-        // sample response: 41 0c 00 0d
         for idx in stride(from: 0, to: size, by: 2) {
             begin = idx
             end = idx + 1
+            //* Grab the next byte pair from bytes buffer
             let bytePair = String(data: rawBytes.subdata(in: Range(begin...end)), encoding: .utf8) ?? ""
-            // Decode the byte pair and append it to buffer
-            let ascii = ASCIIHelper.hexToASCII(hex: bytePair)
-            buffer.add(ascii)
+            //* Decode the byte pair and append it to buffer
+            guard let parsedHex = ASCIIHelper.hexToInt(bytePair) else { continue }
+            buffer.append(parsedHex)
         }
-        
-//        buffer.clear();
-//        int begin = 0;
-//        int end = 2;
-//        while (end <= rawData.length()) {
-//            buffer.add(Integer.decode("0x" + rawData.substring(begin, end)));
-//            begin = end;
-//            end += 2;
-//        }
     }
     
     /**
@@ -180,12 +180,11 @@ open class ObdCommand {
      * called only once to perform calculations.
      */
     func performCalculations() async {
-        
+        fatalError("This method should be overridden.")
     }
     
     public func getFormattedResult() -> String {
-        //fatalError("This method should be overridden.")
-        return "NO RESULT"
+        fatalError("This method should be overridden.")
     }
 
     public func getResult() -> String? {
@@ -193,7 +192,7 @@ open class ObdCommand {
     }
 
     public func getResultUnit() -> String {
-       return "?"
+        fatalError("This method should be overridden.")
     }
 
 }

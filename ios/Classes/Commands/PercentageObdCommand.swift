@@ -21,7 +21,7 @@ open class PercentageObdCommand : ObdCommand {
     }
 
     public override func getFormattedResult() -> String {
-        return "\(self.percentage) \(self.getResultUnit())"
+        return "\(String(format: "%.1f", self.percentage))\(self.getResultUnit())"
     }
 
     public override func getResultUnit() -> String {
