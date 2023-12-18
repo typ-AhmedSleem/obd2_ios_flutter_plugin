@@ -6,6 +6,12 @@ class ResponsePacket {
 
     let data: Data
 
+    var isEmpty: Bool {
+        get {
+            return self.data.isEmpty
+        }
+    }
+
     init(payload data: Data) {
         self.data = data
     }
@@ -19,7 +25,7 @@ class ResponsePacket {
     }
 
     static func empty() -> ResponsePacket {
-        return ResponsePacket(payload: "NO DATA")
+        return ResponsePacket(payload: "")
     }
 
 }
