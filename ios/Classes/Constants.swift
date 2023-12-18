@@ -12,39 +12,8 @@ struct MethodsNames {
     public static let  GET_FUEL_LEVEL = "GET_LEVEL"
 }
 
-struct Constants {
-    public static let  INITIAL_RESULT = -1
-
-    public static let  RESULT_CODE_INIT_DONE = -2
-    public static let  RESULT_CODE_ERROR = -2
-    public static let  RESULT_CODE_FAILED = -3
-
-    public static let  ERROR_STOPPED = -4
-    public static let  ERROR_NO_DATA = -5
-    public static let  ERROR_UNABLE_TO_CONNECT = -6
-
-    public static let  CMD_PREFIX = ""
-    public static let  CMD_ECHO_ON = "AT E1"
-    public static let  CMD_ECHO_OFF = "AT E0"
-    public static let  CMD_OBD2_IDENTIFIER = "AT @2"
-    public static let  CMD_AUTO_FORMATTING_ON = "AT CAF1"
-    public static let  CMD_RESPONSES_ON = "AT R1"
-
-    public static let  RESPONSE_OK = "OK"
-    public static let  RESPONSE_NO_DATA = ""
-    public static let  RESPONSE_ERROR = "?"
-
-    public static let NO_RESPONSE = "[NO_RESPONSE]"
-}
-
 struct OBDConstants {
     public static let OBD_ADAPTER_NAME = "KONNWEI"
-}
-
-struct UUIDs {
-    // todo: Replace those UUIDs with the real OBD2 adapter ones
-	public static let serviceUUID = CBUUID(string: "E20A39F4-73F5-4BC4-A12F-17D1AD07A961")
-	public static let charUUID = CBUUID(string: "08590F7E-DB05-467E-8757-72F6FAEB13D4")
 }
 
 /**

@@ -5,14 +5,25 @@ import Foundation
 class Logger {
 
     private let TAG : String
+    private var lastSubTag: String
 
     public required init(_ tag: String) {
         self.TAG = tag
+        self.lastSubTag = ""
     }
 
     public func log(_ msg: String?) {
         guard let msg = msg else { return }
-        print("[\(self.TAG)]: \(msg)")
+        print("[\(self.TAG)]: \(msg).")
+    }
+
+    public func log(_ subTag: String, _ msg: String) {
+        var message = "[\(self.TAG):\(subTag)] => \(msg)."
+        if self.lastSubTag !=  subTag {
+            message = "\n" + message
+            self.lastSubTag = subTag
+        }
+        print(message)
     }
 
     public static func log(tag: String, msg: Any) {
@@ -44,6 +55,7 @@ class RegexMatcher {
                 withTemplate: replacement
             )
         } catch {
+            print("Error happened while replacing in string. Reason: \(error)")
             return original
         }
     }
@@ -52,7 +64,7 @@ class RegexMatcher {
 
 class RegexPatterns {
 
-    public static let WHITESPACE_PATTERN = "\\s"
+    public static let WHITESPACE_PATTERN = "(\\s)|(>)"
     public static let BUSINIT_PATTERN = "(BUS INIT)|(BUSINIT)|(\\.)"
     public static let SEARCHING_PATTERN = "SEARCHING"
     public static let DIGITS_LETTERS_PATTERN = "([0-9A-F])+"
@@ -85,20 +97,21 @@ class JSONHelper {
 
 class ASCIIHelper {
 
-    public static func byteToASCII(byte: UInt8) -> Character? {
+    public static func intToASCII(_ byte: Int) -> Character? {
         let scalar = UnicodeScalar(byte)
-        //guard let scalar = scalar else { return nil }
+        guard let scalar = scalar else { return nil }
         return Character(scalar)
     }
-    
-    public static func hexToASCII(hex: String) -> Int {
-        if let ascii = Int(hex, radix: 16) {
-            return ascii
+
+    public static func hexToInt(_ bytes: String) -> Int? {
+        if let integerValue = Int(bytes, radix: 16) {
+            return integerValue
         } else {
-            return -1
+            print("Can't decode hex '\(bytes)' to int")
+            return nil
         }
     }
-    
+
 }
 
 extension [String: String] {   
