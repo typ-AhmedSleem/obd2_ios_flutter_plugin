@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
@@ -20,7 +19,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final logger = Logger("MyApp");
+  final logger = Logger("App");
   final _obd2FlutterPlugin = Obd2FlutterPlugin();
 
   Iterable<BluetoothDevice> _bleDevices = [];
@@ -102,7 +101,9 @@ class _MyAppState extends State<MyApp> {
                     logger.log("Can't initialize adapter..\nReason: $e");
                   }
                 },
-                child: const Text('Initialize adapter'),
+                child: Text(
+                  _adapterInitialized ? "OBD2 adapter is initialized" : "Initialize OBD2 adapter"
+                ),
               ),
               CupertinoButton(
                 onPressed: () async {
