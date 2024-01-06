@@ -40,57 +40,54 @@ public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
     }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-      logger.log("[PLUGIN]: Got call=\(call.method) | args=\(String(describing: call.arguments))")
-    switch call.method {
-      case MethodsNames.SCAN_BLUETOOTH_DEVICES:
-        if self.obd2.isBLEManagerInitialized {
-          do {
-            let devices: [String] = obd2.bluetoothManager?.retrieveBoundedBluetoothDevicesSerialized() ?? []
-              if devices.isEmpty {
-                  logger.log("No bounded devices found. Scanning for devices...")
-                  self.obd2.bluetoothManager?.scanForDevices()
-              } else {
-                  logger.log("Retrieved \(devices.count) bluetooth device.")
-              }
-              result(devices)
-          } catch {
-            let emptyDevicesList: [String] = []
-            result(emptyDevicesList)
-          }
-        } else {
-            logger.log("Bluetooth isn't initialized")
-            //* If we reached this point, it means that BLE manager hasn't yet been initialized. So, result an error
-            result(FlutterError(
-              code: "400",
-              message: "BluetoothManager either poweredOff or hasn't yet been initialized yet. Check it in your settings.",
-              details: nil
-            ))
-        }
-        
-      case MethodsNames.CONNECT_ADAPTER:
-        do {
-          //? Flutter will send me device address in args
-            let address = call.arguments as? String
-            guard let address = address else { throw CantConnectError() }
-            self.connect(address) { res in
-                switch res {
-                case .success(let connected):
-                    result(connected)
-                case .failure(let error):
-                    self.logger.log(String(describing: error))
-                    result(FlutterError())
+        logger.log("[PLUGIN]: Got call=\(call.method) | args=\(String(describing: call.arguments))")
+        switch call.method {
+        case MethodsNames.SCAN_BLUETOOTH_DEVICES:
+            if self.obd2.isBLEManagerInitialized {
+                let devices: [String] = obd2.bluetoothManager?.retrieveBoundedBluetoothDevicesSerialized() ?? []
+                if devices.isEmpty {
+                    logger.log("No bounded devices found. Scanning for devices...")
+                    self.obd2.bluetoothManager?.scanForDevices()
+                } else {
+                    logger.log("Retrieved \(devices.count) bluetooth device.")
                 }
+                result(devices)
+            } else {
+                logger.log("Bluetooth isn't initialized")
+                //* If we reached this point, it means that BLE manager hasn't yet been initialized. So, result an error
+                result(FlutterError(
+                    code: "300",
+                    message: "Bluetooth is either poweredOff or hasn't yet been initialized yet. Check it in your settings.",
+                    details: nil
+                ))
             }
-        } catch {
-            result(FlutterError(
-              code: "400",
-              message: "Can't connect to device. Please try again",
-              details: nil
-            ))
-        }
-      case MethodsNames.INIT_ADAPTER:
-        //* This method result nothing and idk why :)
-        do {
+        case MethodsNames.CONNECT_ADAPTER:
+            do {
+                //? Flutter will send me device address in args
+                let address = call.arguments as? String
+                guard let address = address else { throw CantConnectError() }
+                self.connect(address) { res in
+                    switch res {
+                    case .success(let connected):
+                        result(connected)
+                    case .failure(let error):
+                        self.logger.log(String(describing: error))
+                        result(FlutterError(
+                            code: "400",
+                            message: "Can't connect to device. Please try again",
+                            details: nil
+                        ))
+                    }
+                }
+            } catch {
+                result(FlutterError(
+                    code: "400",
+                    message: "Can't connect to device. Please try again",
+                    details: nil
+                ))
+            }
+        case MethodsNames.INIT_ADAPTER:
+            //* This method result nothing and idk why :)
             self.initializeOBD() { [self] res in
                 switch res {
                 case .success(let initialized):
@@ -100,35 +97,23 @@ public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
                     logger.log(String(describing: error))
                     result(FlutterError(
                         code: "400",
-                        message: "Can't initialize adapter",
+                        message: "Can't initialize the OBD adapter. Check if it's connected or it may be out-of-range",
                         details: nil))
                 }
             }
-          
-        } catch {
-          result(FlutterError(
-            code: "400",
-            message: "Can't initialize the OBD adapter. Check if it's connected or it may be out-of-range",
-            details: nil
-          ))
-        }
-      case MethodsNames.GET_FUEL_LEVEL:
-        do {
+        case MethodsNames.GET_FUEL_LEVEL:
             self.getFuelLevel() { res in
                 switch res {
                 case .success(let fuelLevel):
                     self.logger.log("Got fuel level: \(fuelLevel)")
                     result(fuelLevel)
-                case .failure(let error):
+                case .failure(_):
                     result("UNKNOWN")
                 }
             }
-        } catch {
-          result("UNKNOWN")
+        default:
+            result(FlutterMethodNotImplemented)
         }
-      default:
-        result(FlutterMethodNotImplemented)
-      }
-  }
+    }
 
 }
