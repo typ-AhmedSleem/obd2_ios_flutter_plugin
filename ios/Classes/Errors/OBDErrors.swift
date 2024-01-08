@@ -6,27 +6,27 @@
 //
 
 class ResponseError : Error {
-
+    
     var message: String
     var response: String
     var command: String = "NO_CMD"
     var matchRegex: Bool
-
+    
     init(message: String, matchRegex:Bool) {
         self.message = message
         self.matchRegex = matchRegex
         self.response = ""
     }
-
+    
     convenience init(message: String) {
         self.init(message: message, matchRegex: false)
     }
-
+    
     public static func clean(_ content: String?) -> String {
         guard let content = content else { return "" }
-        return content.replacingOccurrences(of: "\\s", with: "").uppercased()
+        return content.removeWhitespaces().uppercased()
     }
-
+    
     public func check(response: String) -> Bool {
         self.response = response
         if self.matchRegex {
@@ -35,15 +35,15 @@ class ResponseError : Error {
             return ResponseError.clean(self.response).contains(self.message)
         }
     }
-
+    
     public func setCommand(command: String) {
         self.command = command
     }
-
+    
     public func getPrintableErrorMessage() -> String {
         return "Error running \(self.command), response: \(self.response)"
     }
-
+    
 }
 
 /**
@@ -84,6 +84,11 @@ class InvalidResponseError : ResponseError {
     init() {
         super.init(message: "Invalid response received", matchRegex: false)
     }
+    
+    override func check(response: String) -> Bool {
+        return RegexMatcher.isMatchingRegex(inputString: response, regexPattern: RegexPatterns.DIGITS_LETTERS_PATTERN)
+    }
+    
 }
 
 /**
