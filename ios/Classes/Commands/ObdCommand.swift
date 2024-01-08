@@ -41,14 +41,14 @@ open class ObdCommand : BaseObdCommand {
             self.timeStart = TimeHelper.currentTimeInMillis()
             // Send the command to peripheral by calling sendCommand
             try await self.sendCommand(bm: bleManager)
-            // Hold thread for a delay if presented
-            if self.responseDelayInMs > 0 {
-                logger.log("execute", "Waiting \(self.responseDelayInMs) millis for the response...")
-                try await Task.sleep(nanoseconds: UInt64(self.responseDelayInMs * 1_000_000))
-                logger.log("execute", "Finished waiting.. Looking for response in response station...")
-            }
             var response: String? = nil
             if expectResponse {
+                // Hold thread for a delay if presented
+                if self.responseDelayInMs > 0 {
+                    logger.log("execute", "Waiting \(self.responseDelayInMs) millis for the response...")
+                    try await Task.sleep(nanoseconds: UInt64(self.responseDelayInMs * 1_000_000))
+                    logger.log("execute", "Finished waiting.. Looking for response in response station...")
+                }
                 // Read the result by calling readResult
                 response = try await self.readResult(bm: bleManager)
                 self.response = response
