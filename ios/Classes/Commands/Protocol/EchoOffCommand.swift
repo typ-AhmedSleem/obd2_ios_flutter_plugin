@@ -7,7 +7,7 @@
 class EchoOffCommand : ObdProtocolCommand {
 
     public init() {
-        super.init("AT E0")
+        super.init(cmd: "AT E0")
     }
 
 }

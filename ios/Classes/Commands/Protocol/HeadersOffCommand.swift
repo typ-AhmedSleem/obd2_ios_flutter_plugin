@@ -7,7 +7,7 @@
 class HeadersOffCommand : ObdProtocolCommand {
 
     public init() {
-        super.init("AT H0")
+        super.init(cmd: "AT H0")
     }
 
 }

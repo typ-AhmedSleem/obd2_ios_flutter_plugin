@@ -3,7 +3,7 @@
 class SelectProtocolCommand : ObdProtocolCommand {
 
     public init(obdProtocol: String) {
-        super.init("AT SP \(obdProtocol)")
+        super.init(cmd: "AT SP \(obdProtocol)")
     }
 
 }

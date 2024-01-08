@@ -16,7 +16,7 @@
 class CloseCommand : ObdProtocolCommand {
 
     public init() {
-        super.init("AT PC")
+        super.init(cmd: "AT PC")
     }
 
 }

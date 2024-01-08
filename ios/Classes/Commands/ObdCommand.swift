@@ -7,7 +7,7 @@
 import Foundation
 import CoreBluetooth
 
-open class ObdCommand {
+open class ObdCommand : BaseObdCommand {
     
     internal let logger: Logger
     
@@ -20,16 +20,14 @@ open class ObdCommand {
     internal var timeStart : Int64
     internal var timeEnd : Int64
     
-    private let MAX_RESPONSE_DELAY = 250
-    
-    public init(_ command: String) {
+    public init(cmd command: String, delay responseDelay: Int) {
         self.buffer = []
         self.cmd = command
         self.response = nil
         self.timeStart = -1
         self.timeEnd = -1
-        self.responseDelayInMs = 0
         self.useImperialUnits = true
+        self.responseDelayInMs = min(responseDelay, 250)
         self.logger = Logger("ObdCmd[\(command)]")
     }
     
@@ -46,7 +44,7 @@ open class ObdCommand {
             // Hold thread for a delay if presented
             if self.responseDelayInMs > 0 {
                 logger.log("execute", "Waiting \(self.responseDelayInMs) millis for the response...")
-                try await Task.sleep(nanoseconds: UInt64(min(self.responseDelayInMs, MAX_RESPONSE_DELAY) * 1_000_000))
+                try await Task.sleep(nanoseconds: UInt64(self.responseDelayInMs * 1_000_000))
                 logger.log("execute", "Finished waiting.. Looking for response in response station...")
             }
             var response: String? = nil
@@ -176,23 +174,15 @@ open class ObdCommand {
         }
     }
     
-    /**
-     * This method exists so that for each command, there must be a method that is
-     * called only once to perform calculations.
-     */
     func performCalculations() async throws {
     }
     
-    public func getFormattedResult() -> String {
-        return "NO DATA"
+    func getFormattedResult() -> String {
+        return ""
     }
     
-    public func getResult() -> String? {
-        return self.response
-    }
-    
-    public func getResultUnit() -> String {
-        return "?"
+    func getResultUnit() -> String {
+        return ""
     }
     
 }

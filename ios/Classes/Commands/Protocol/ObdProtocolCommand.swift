@@ -2,8 +2,8 @@
 
 class ObdProtocolCommand : ObdCommand {
 
-    override init(_ command: String) {
-        super.init(command)
+    public init(cmd command: String) {
+        super.init(cmd: command, delay: 25)
     }
 
 }

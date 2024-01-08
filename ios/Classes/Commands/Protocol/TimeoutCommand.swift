@@ -8,7 +8,7 @@
 class TimeoutCommand : ObdProtocolCommand {
 
     init(timeout: Int) {
-        super.init("AT ST \(String(0xFF & timeout, radix: 16))")
+        super.init(cmd: "AT ST \(String(0xFF & timeout, radix: 16))")
     }
 
 }
