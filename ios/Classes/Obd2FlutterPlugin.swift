@@ -2,17 +2,25 @@ import Flutter
 import UIKit
 
 public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
-
-  private var obd2 = OBD2()
-  private var logger = Logger("OBD2Plugin")
-
-  public static func register(with registrar: FlutterPluginRegistrar) {
-    let bluetoothChannel = FlutterMethodChannel(name: MethodChannelsNames.BLUE_DEVICES, binaryMessenger: registrar.messenger())
-    let fuelChannel = FlutterMethodChannel(name: MethodChannelsNames.FUEL, binaryMessenger: registrar.messenger())
-    let instance = Obd2FlutterPlugin()
-    registrar.addMethodCallDelegate(instance, channel: bluetoothChannel)
-    registrar.addMethodCallDelegate(instance, channel: fuelChannel)
-  }
+    
+    private let obd2: OBD2
+    private let logger: Logger
+    
+    public static func register(with registrar: FlutterPluginRegistrar) {
+        // Define method channels
+        let bluetoothChannel = FlutterMethodChannel(name: MethodChannelsNames.BLUE_DEVICES, binaryMessenger: registrar.messenger())
+        let fuelChannel = FlutterMethodChannel(name: MethodChannelsNames.FUEL, binaryMessenger: registrar.messenger())
+        // Create a new instance of Obd2FlutterPlugin
+        let instance = Obd2FlutterPlugin()
+        // Register method channels to plugin registrar
+        registrar.addMethodCallDelegate(instance, channel: bluetoothChannel)
+        registrar.addMethodCallDelegate(instance, channel: fuelChannel)
+    }
+    
+    override init() {
+        self.obd2 = OBD2()
+        self.logger = Logger("OBD2Plugin")
+    }
     
     private func connect(_ address: String, callback: @escaping (Result<Bool, CantConnectError>) -> Void) {
         Task {
@@ -32,14 +40,14 @@ public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
         Task {
             let fuelLevel = await self.obd2.getFuelLevel()
             guard let fuelLevel = fuelLevel else {
-                callback(.failure(ResponseError(message: "Can't get fuelLevel", matchRegex: false)))
+                callback(.failure(ResponseError(message: "Can't get fuel level", matchRegex: false)))
                 return
             }
             callback(.success(fuelLevel))
         }
     }
-
-  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    
+    public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         logger.log("[PLUGIN]: Got call=\(call.method) | args=\(String(describing: call.arguments))")
         switch call.method {
         case MethodsNames.SCAN_BLUETOOTH_DEVICES:
@@ -63,15 +71,19 @@ public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
             }
         case MethodsNames.CONNECT_ADAPTER:
             do {
-                //? Flutter will send me device address in args
+                // Grab the address of adapter from args and validate it
                 let address = call.arguments as? String
-                guard let address = address else { throw CantConnectError() }
+                guard let address = address else {
+                    throw ConnectionErrors.deviceNotFoundError
+                }
+                // Connect to adapter using given address
                 self.connect(address) { res in
                     switch res {
                     case .success(let connected):
+                        // Result is either true or false not always true
                         result(connected)
                     case .failure(let error):
-                        self.logger.log(String(describing: error))
+                        self.logger.log("Error connecting to adapter. Reason: \(type(of: error))")
                         result(FlutterError(
                             code: "400",
                             message: "Can't connect to device. Please try again",
@@ -80,6 +92,7 @@ public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
                     }
                 }
             } catch {
+                self.logger.log("Error connecting to adapter. Reason: \(type(of: error))")
                 result(FlutterError(
                     code: "400",
                     message: "Can't connect to device. Please try again",
@@ -115,5 +128,5 @@ public class Obd2FlutterPlugin: NSObject, FlutterPlugin {
             result(FlutterMethodNotImplemented)
         }
     }
-
+    
 }
