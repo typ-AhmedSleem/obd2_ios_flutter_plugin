@@ -20,7 +20,7 @@ class Logger {
     public func log(_ subTag: String, _ msg: String) {
         var message = "[\(self.TAG):\(subTag)] => \(msg)."
         if self.lastSubTag !=  subTag {
-            message = "\n" + message
+            message = "" + message
             self.lastSubTag = subTag
         }
         print(message)

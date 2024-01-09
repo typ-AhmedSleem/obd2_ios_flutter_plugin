@@ -16,6 +16,11 @@ final class BluetoothStates {
         CBManagerState.unauthorized : "UnAuthorized",
         CBManagerState.poweredOn : "PoweredOn",
     ]
+    
+    public static func of(_ rawState: CBManagerState) -> String {
+        return BluetoothStates.BT_MAPPED_STATE[rawState] ?? "?"
+    }
+    
 }
 
 final class PeripheralStates {
