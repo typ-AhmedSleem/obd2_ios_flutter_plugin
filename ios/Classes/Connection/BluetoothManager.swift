@@ -6,10 +6,12 @@ class BluetoothManager : NSObject {
     //* Global runtime
     private let logger = Logger("BM")
     private let responseStation =  ResponseStation(queueSize: 50)
-    private var delegate: BluetoothManagerDelegate?
+    public var delegate: BluetoothManagerDelegate?
     private var boundedDevices: [String: CBPeripheral] = [:]
-    private var scannedDevicesUUIDs: [UUID] = []
+    public var scannedDevicesUUIDs: [UUID] = []
     private var scanTimer: Timer? = nil
+    
+    public static let DELAY_SECONDS = 3
     
     //* Bluetooth runtime
     private var centralManager: CBCentralManager?
@@ -66,26 +68,28 @@ class BluetoothManager : NSObject {
         self.logger.log("init", "Bluetooth manager has been initialized.")
     }
     
-    public func scanForDevices() {
+    public func scanForDevices() async throws {
         if !self.isScanning {
+            logger.log("stopScan", "Bluetooth scan started.")
             self.centralManager?.scanForPeripherals(withServices: nil, options: nil)
-            // Initiate a scan cancel timer
-            self.scanTimer = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector: #selector(self.stopScan), userInfo: nil, repeats: false)
+            try await Task.sleep(nanoseconds: UInt64(BluetoothManager.DELAY_SECONDS * 1000 * 1_000_000))
+            self.centralManager?.stopScan()
+            logger.log("stopScan", "Bluetooth scan stopped.")
         }
     }
     
-    @objc
-    public func stopScan() {
-        if self.isScanning && self.scanTimer != nil {
-            logger.log("stopScan", "Stopping bluetooth scan...")
-            // Stop scan
-            self.centralManager?.stopScan()
-            // Invalidate timer
-            self.scanTimer?.invalidate()
-            self.scanTimer = nil
-            logger.log("stopScan", "Scan stopped.")
-        }
-    }
+//    @objc
+//    public func stopScan() {
+//        if self.isScanning && self.scanTimer != nil {
+//            logger.log("stopScan", "Stopping bluetooth scan...")
+//            // Stop scan
+//            self.centralManager?.stopScan()
+//            // Invalidate timer
+//            self.scanTimer?.invalidate()
+//            self.scanTimer = nil
+//            logger.log("stopScan", "Scan stopped.")
+//        }
+//    }
     
     /**
      * Retrieves list of connected-to-system BLE devices and also serializes each device
@@ -93,6 +97,7 @@ class BluetoothManager : NSObject {
      */
     public func retrieveBoundedBluetoothDevicesSerialized() -> [String] {
         var devices: [String] = []
+        self.logger.log("retrieveBoundedBluetoothDevicesSerialized", "Last scan result has \(self.scannedDevicesUUIDs.count) devices.")
         let devicesList: [CBPeripheral] = self.centralManager?.retrievePeripherals(withIdentifiers: self.scannedDevicesUUIDs) ?? []
         self.logger.log("Retrieved \(devicesList.count) devices.")
         for bleDevice in devicesList {
@@ -107,10 +112,10 @@ class BluetoothManager : NSObject {
         return devices
     }
     
-    public func connect(target address: String?) async -> Bool {
+    public func connect(target address: String?) async throws -> Bool {
         if !self.isPowredOn {
             //* Not yet poweredOn. Report Bluetooth either poweredOff, unsupported or has error
-            self.logger.log("connect", "BluetoothManager isn't initialized. CurrentState: \(self.state)")
+            self.logger.log("connect", "BluetoothManager isn't initialized. CurrentState: \(BluetoothStates.of(self.state))")
             return false
         }
         if self.connected {
@@ -135,7 +140,12 @@ class BluetoothManager : NSObject {
         // Connect to adapter
         self.logger.log("connect", "Connecting to adapter...")
         self.centralManager?.connect(obdAdapter!, options: [CBConnectPeripheralOptionNotifyOnConnectionKey: true])
-        return self.connected
+        // Suspend for a 250ms waiting for runtime update
+        try await Task.sleep(nanoseconds: 1000 * 1_000_000)
+        guard self.connected else {
+            throw ConnectionErrors.cantConnectError
+        }
+        return true // Connected
     }
     
     /**
@@ -160,17 +170,17 @@ class BluetoothManager : NSObject {
         //* Check if device is connected and at least only one characteristics has been discovered
         guard self.hasOpenWritingChannel else {
             logger.log("send", "No channels are open for writing.")
-            throw CommandExecutionError()
+            throw CommandErrors.commandExecutionError("No channels are open for writing.")
         }
         //* Get the bytes of the data to be sent encoded in utf8 format
         guard let data = dataToSend.data(using: .utf8) else {
             self.logger.log("send", "Can't send empty data.")
-            throw CommandExecutionError()
+            throw CommandErrors.commandExecutionError("Can't send empty data.")
         }
         //* Send data adapter
         if let adapter = obdAdapter {
-            for (_, channel) in self.channels {
-                self.logger.log("send", "Writing '\(String(data: data, encoding: .utf8) ?? "")' to channel: '\(channel)'")
+            for (uuid, channel) in self.channels {
+                self.logger.log("send", "Writing '\(dataToSend.removeWhitespaces())' to channel: '\(uuid)'")
                 if channel.properties.contains(.write) {
                     adapter.writeValue(data, for: channel, type: .withResponse)
                     continue
@@ -213,14 +223,18 @@ extension BluetoothManager: CBCentralManagerDelegate {
             self.boundedDevices[address.uuidString] = peripheral
             //* Connect to adapter
             Task {
-                _ = await self.connect(target: address.uuidString)
+                _ = try await self.connect(target: address.uuidString)
             }
         }
     }
     
     /** [DELEGATED] Called when a central manager did updated its state */
     func centralManagerDidUpdateState( _ central: CBCentralManager) {
-        self.logger.log("centralManager::centralManagerDidUpdateState", "Bluetooth state has changed: \(String(describing: BluetoothStates.BT_MAPPED_STATE[central.state]))")
+        self.logger.log("centralManager::centralManagerDidUpdateState", "Bluetooth state has changed: \(BluetoothStates.of(central.state))")
+        // Initialize the bluetooth manager if not yet initialized
+        if central.state == .poweredOn {
+            
+        }
     }
     
     /** [DELEGATED] Called when a successful connection with the OBD adapter was established */
@@ -230,7 +244,6 @@ extension BluetoothManager: CBCentralManagerDelegate {
         self.obdAdapter?.delegate = self
         self.obdAdapter?.discoverServices(nil)
         self.delegate?.onAdapterConnected()
-        self.logger.log("centralManager::didConnect", "Connected to \(peripheral.identifier.uuidString)")
     }
     
     /** [DELEGATED] Called when the OBD adapter has disconnected or its connection was lost */
@@ -270,7 +283,7 @@ extension BluetoothManager : CBPeripheralDelegate {
             peripheral.setNotifyValue(true, for: characteristic)
             let uuid = characteristic.uuid.uuidString
             self.channels[uuid] = characteristic
-            self.logger.log("centralManager::didDiscoverCharacteristicsFor", "Subscribed to channel: \(uuid)")
+            self.logger.log("centralManager::didDiscoverCharacteristicsFor(\(service.uuid.uuidString))", "Subscribed to channel: \(uuid)")
         }
     }
     
