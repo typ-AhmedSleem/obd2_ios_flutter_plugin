@@ -23,7 +23,9 @@ class _MyAppState extends State<MyApp> {
   final _obd2FlutterPlugin = Obd2FlutterPlugin();
 
   Iterable<BluetoothDevice> _bleDevices = [];
+  bool scanning = false;
   String? _adapterAddress;
+  bool connecting = false;
   bool _connected = false;
   bool _adapterInitialized = false;
   String _fuelLevel = "--";
@@ -38,7 +40,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('iOS OBD Plugin sample app'),
+          title: const Text('OBD2 Plugin sample app'),
         ),
         body: Center(
           child: Column(
@@ -49,16 +51,27 @@ class _MyAppState extends State<MyApp> {
                 onPressed: () async {
                   try {
                     // Resolve received devices
-                    var rawDevices = await _obd2FlutterPlugin.getBluetoothDevices();
-                    var devices = rawDevices.map<BluetoothDevice>((d) => BluetoothDevice.fromJson(d as String? ?? ""));
-                    logger.log("Got: raw=${rawDevices.length} -> resolved=${devices.length} Devices | runtimeType=${devices.runtimeType}");
+                    setState(() {
+                      scanning = true;
+                    });
+                    var rawDevices =
+                        await _obd2FlutterPlugin.getBluetoothDevices();
+                    setState(() {
+                      scanning = false;
+                    });
+                    var devices = rawDevices.map<BluetoothDevice>(
+                        (d) => BluetoothDevice.fromJson(d as String? ?? ""));
+                    logger.log(
+                        "Got: raw=${rawDevices.length} -> resolved=${devices.length} Devices | runtimeType=${devices.runtimeType}");
                     // Try to find the adapter by its name in the list
                     String? tempAddress;
                     for (var device in devices) {
-                      logger.log("Trying device: ${device.name} at ${device.address}");
+                      logger.log(
+                          "Trying device: '${device.name}' at address '${device.address}'.");
                       if (device.name == OBD_ADAPTER_NAME) {
                         tempAddress = device.address;
-                        logger.log("Found adapter ${device.name} at address ${device.address}");
+                        logger.log(
+                            "Found adapter '${device.name}' at address '${device.address}'");
                         break;
                       }
                     }
@@ -70,13 +83,22 @@ class _MyAppState extends State<MyApp> {
                     logger.log("Error getting bluetooth devices.\nReason: $e");
                   }
                 },
-                child: Text(_bleDevices.isNotEmpty ? "Found ${_bleDevices.length} device" : "Scan Bluetooth for devices"),
+                child: Text(scanning
+                    ? "Scanning..."
+                    : _bleDevices.isNotEmpty
+                        ? "Found ${_bleDevices.length} device"
+                        : "Scan Bluetooth for devices"),
               ),
               CupertinoButton(
                 onPressed: () async {
                   try {
+                    setState(() {
+                      connecting = true;
+                    });
                     final connected = await _obd2FlutterPlugin.connect(_adapterAddress ?? "") ?? false;
-                    logger.log(connected ? "Connected to adapter" : "Connect to adapter");
+                    setState(() {
+                      connecting = false;
+                    });
                     setState(() {
                       _connected = connected;
                     });
@@ -84,11 +106,13 @@ class _MyAppState extends State<MyApp> {
                     logger.log("Error connecting to adapter.\nReason: $e");
                   }
                 },
-                child: Text(_connected
-                    ? "Connected to adapter"
-                    : _adapterAddress != null
-                        ? 'Connect to $_adapterAddress'
-                        : "Connect to adapter"),
+                child: Text(connecting
+                    ? "Connecting to $_adapterAddress..."
+                    : _connected
+                        ? "Connected to adapter"
+                        : _adapterAddress != null
+                            ? 'Connect to $_adapterAddress'
+                            : "Connect to adapter"),
               ),
               CupertinoButton(
                 onPressed: () async {
@@ -101,9 +125,9 @@ class _MyAppState extends State<MyApp> {
                     logger.log("Can't initialize adapter..\nReason: $e");
                   }
                 },
-                child: Text(
-                  _adapterInitialized ? "OBD2 adapter is initialized" : "Initialize OBD2 adapter"
-                ),
+                child: Text(_adapterInitialized
+                    ? "OBD2 adapter is initialized"
+                    : "Initialize OBD2 adapter"),
               ),
               CupertinoButton(
                 onPressed: () async {
@@ -117,7 +141,9 @@ class _MyAppState extends State<MyApp> {
                     logger.log("Can't get fuel level..\nReason: $e");
                   }
                 },
-                child: Text(_fuelLevel == "--" ? "Get fuel level" : "FuelLevel: $_fuelLevel"),
+                child: Text(_fuelLevel == "--"
+                    ? "Get fuel level"
+                    : "FuelLevel: $_fuelLevel"),
               ),
             ],
           ),
@@ -135,6 +161,8 @@ class BluetoothDevice {
 
   static BluetoothDevice fromJson(String jsonDevice) {
     var parsedDevice = json.decode(jsonDevice);
-    return BluetoothDevice(name: parsedDevice['name'] ?? "", address: parsedDevice['address'] ?? "");
+    return BluetoothDevice(
+        name: parsedDevice['name'] ?? "",
+        address: parsedDevice['address'] ?? "");
   }
 }
