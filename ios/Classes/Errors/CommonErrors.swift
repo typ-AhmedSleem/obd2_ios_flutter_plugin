@@ -34,5 +34,5 @@ enum CommonErrors: Error {
 
 enum CommandErrors: Error {
     case cantConnectError
-    case commandExecutionError
+    case commandExecutionError(String)
 }
