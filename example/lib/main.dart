@@ -80,6 +80,9 @@ class _MyAppState extends State<MyApp> {
                       if (tempAddress != null) _adapterAddress = tempAddress;
                     });
                   } on PlatformException catch (e) {
+                    setState(() {
+                      scanning = false;
+                    });
                     logger.log("Error getting bluetooth devices.\nReason: $e");
                   }
                 },
@@ -103,6 +106,9 @@ class _MyAppState extends State<MyApp> {
                       _connected = connected;
                     });
                   } on PlatformException catch (e) {
+                    setState(() {
+                      connecting = false;
+                    });
                     logger.log("Error connecting to adapter.\nReason: $e");
                   }
                 },
