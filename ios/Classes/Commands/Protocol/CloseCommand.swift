@@ -14,9 +14,9 @@
  * request such as 01 00 (do not send ATZ or AT SP0, as many do).
  */
 class CloseCommand : ObdProtocolCommand {
-
+    
     public init() {
         super.init(cmd: "AT PC")
     }
-
+    
 }

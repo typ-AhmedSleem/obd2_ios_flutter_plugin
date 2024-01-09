@@ -5,9 +5,9 @@
  *
  */
 class LineFeedOffCommand : ObdProtocolCommand {
-
+    
     public init() {
         super.init(cmd: "AT L0")
     }
-
+    
 }

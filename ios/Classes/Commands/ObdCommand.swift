@@ -35,7 +35,7 @@ open class ObdCommand : BaseObdCommand {
      *!  CAUTION: This method doesn't check for channels or adapter connection
      *!  so, when calling it, you must ensure that adapter is connected and channel was discovered and open
      */
-    func execute(bleManager: BluetoothManager, expectResponse: Bool) async -> String? {
+    func execute(bleManager: BluetoothManager, expectResponse: Bool) async throws -> String? {
         do {
             // Time the start of execution
             self.timeStart = TimeHelper.currentTimeInMillis()
@@ -60,7 +60,7 @@ open class ObdCommand : BaseObdCommand {
             return response
         } catch {
             logger.log("execute", "Error while executing command or while resolving response. Reason: \(error)")
-            return nil
+            throw error
         }
     }
     
@@ -87,7 +87,7 @@ open class ObdCommand : BaseObdCommand {
     private func readRawBytes(bm bleManager: BluetoothManager) async throws {
         //* Consume the very first packet on ResponseStation instance
         let packet = bleManager.consumeNextResponse()
-        var rawResponse = packet.decodePayload()
+        let rawResponse = packet.decodePayload()
         guard rawResponse.isNotEmpty() else {
             throw ResolverErrors.emptyResponse
         }

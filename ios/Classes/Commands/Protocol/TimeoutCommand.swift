@@ -6,9 +6,9 @@
  *
  */
 class TimeoutCommand : ObdProtocolCommand {
-
+    
     init(timeout: Int) {
         super.init(cmd: "AT ST \(String(0xFF & timeout, radix: 16))")
     }
-
+    
 }
